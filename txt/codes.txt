@@ -1,0 +1,35 @@
+code	description	status
+A	alternate height of measure	
+B	buttress	
+D	dead from first census	dead
+CWD	coarse woody debris interfering with stem	
+DC	down and dead	stem dead
+DN	tag and tree missing	stem dead
+DS	standing dead	stem dead
+DT	"tree missing, tag found"	stem dead
+DY	dying	alive
+F	fallen	
+G	to be removed from present quadrat	
+H	moved into present quadrat	
+I	injured	
+IR	irregular	
+L	leaning	
+LI	living	alive
+M	main stem	
+MA	Major branch missing	
+MT	missing tag	
+MU	multistem designation from census 1	
+P	prostrate	
+Q	broken above 1.3	
+R	broken below 1.3	broken below
+RS	resprout	alive
+SEC	secondary stem	
+SL	stem lost	stem dead
+SP	species changed	
+TC	tag collected	
+TD	top dead	alive
+V50	vines in 50% of crown	
+WDBH	previous DBH was wrong	
+WTAG	wrong tag number in field	
+X	topped	
+XY	for coordinate correction	

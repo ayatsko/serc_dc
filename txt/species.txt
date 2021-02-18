@@ -1,0 +1,93 @@
+spcode	genus	species	family	authority	idlevel
+ACNE2	Acer	negundo	Aceraceae	L.	species
+ACRU	Acer	rubrum	Aceraceae	L.	species
+AIAL	Ailanthus	altissima	Simaroubaceae	(Mill.) Swingle	species
+AMAR3	Amelanchier	arborea	Rosaceae	(Michx. f.) Fernald	species
+AMCA4	Amelanchier	canadensis	Rosaceae	(L.) Medik.	species
+ARSP2	Aralia	spinosa	Araliaceae	L.	species
+ASTR	Asimina	triloba	Annonaceae	(L.) Dunal	species
+BENI	Betula	nigra	Betulaceae	L.	species
+BRPA4	Broussonetia	papyrifera	Moraceae	(L.) L'Her. ex Vent.	species
+CARA2	Campsis	radicans	Bignoniaceae	(L.) Seem. ex Bureau	species
+CACA18	Carpinus	caroliniana	Betulaceae	Walter	species
+CACO15	Carya	cordiformis	Juglandaceae	(Wangenh.) K. Koch	species
+CAGL8	Carya	glabra	Juglandaceae	(Mill.) Sweet	species
+CATO6	Carya	tomentosa	Juglandaceae	(L.) Nutt.	species
+CARYA	Carya	sp.	Juglandaceae	Nutt.	genus
+COAL2	Cornus	alternifolia	Cornaceae	L. f.	species
+COAM2	Cornus	amomum	Cornaceae	Mill.	species
+COFL2	Cornus	florida	Cornaceae	L.	species
+CEOC	Celtis	occidentalis	Ulmaceae	L.	species
+CEOR7	Celastrus	orbiculatus	Celastraceae	Thunb.	species
+CECA4	Cercis	canadensis	Fabaceae	L.	species
+DIVI5	Diospyros	virginiana	Ebenaceae	L.	species
+EUAM9	Euonymus	americanus	Celastraceae	L.	species
+FAGR	Fagus	grandifolia	Fagaceae	Ehrh.	species
+FRAM2	Fraxinus	americana	Oleaceae	L.	species
+FRPE	Fraxinus	pennsylvanica	Oleaceae	Marshall	species
+ILOP	Ilex	opaca	Aquifoliaceae	Aiton	species
+JUNI	Juglans	nigra	Juglandaceae	L.	species
+JUVI	Juniperus	virginiana	Cupressaceae	L.	species
+KALA	Kalmia	latifolia	Ericaceae	L.	species
+LIGUS2	Ligustrum	sp.	Oleaceae	L.	genus
+LIBE3	Lindera	benzoin	Lauraceae	(L.) Blume	species
+LIST2	Liquidambar	styraciflua	Hamamelidaceae	L.	species
+LITU	Liriodendron	tulipifera	Magnoliaceae	L.	species
+LOJA	Lonicera	japonica	Caprifoliaceae	Thunb.	species
+MOAL	Morus	alba	Moraceae	L.	species
+MORU2	Morus	rubra	Moraceae	L.	species
+NYSY	Nyssa	sylvatica	Cornaceae	Marshall	species
+PAQU2	Parthenocissus	quinquefolia	Vitaceae	(L.) Planch.	species
+PIEC2	Pinus	echinata	Pinaceae	Mill.	species
+PITA	Pinus	taeda	Pinaceae	L.	species
+PIVI2	Pinus	virginiana	Pinaceae	Mill.	species
+PLOC	Platanus	occidentalis	Platanaceae	L.	species
+POGR4	Populus	grandidentata	Salicaceae	Michx.	species
+PRAV	Prunus	avium	Rosaceae	(L.) L.	species
+PRSE2	Prunus	serotina	Rosaceae	Ehrh.	species
+QUAL	Quercus	alba	Fagaceae	L.	species
+QUCO2	Quercus	coccinea	Fagaceae	Munchh.	species
+QUFA	Quercus	falcata	Fagaceae	Michx.	species
+QUMI	Quercus	michauxii	Fagaceae	Nutt.	species
+QUPA2	Quercus	palustris	Fagaceae	Munchh.	species
+QUPH	Quercus	phellos	Fagaceae	L.	species
+QUMO4	Quercus	montana	Fagaceae	Willd.	species
+QURU	Quercus	rubra	Fagaceae	L.	species
+QUST	Quercus	stellata	Fagaceae	Wangenh.	species
+QUVE	Quercus	velutina	Fagaceae	Lam.	species
+QUERC	Quercus	spp.	Fagaceae	L.	genus
+FRCA13	Frangula	caroliniana	Rhamnaceae	(Walter) A. Gray	species
+TORA2	Toxicodendron	radicans	Anacardiaceae	(L.) Kuntze	species
+RHTY	Rhus	typhina	Anacardiaceae	L.	species
+ROPS	Robinia	pseudoacacia	Fabaceae	L.	species
+ROMU	Rosa	multiflora	Rosaceae	Thunb.	species
+SANI	Salix	nigra	Salicaceae	Marshall	species
+SANIC4	Sambucus	nigra spp. canadensis	Caprifoliaceae	(L.) R. Bolli	subspecies
+SAAL5	Sassafras	albidum	Lauraceae	(Nutt.) Nees	species
+ULAM	Ulmus	americana	Ulmaceae	L.	species
+ULRU	Ulmus	rubra	Ulmaceae	Muhl.	species
+VACCI	Vaccinium	spp.	Ericaceae	L.	genus
+VIAC	Viburnum	acerifolium	Caprifoliaceae	L.	species
+VIDE	Viburnum	dentatum	Caprifoliaceae	L.	species
+VIPR	Viburnum	prunifolium	Caprifoliaceae	L.	species
+VITIS	Vitis	spp.	Vitaceae	L.	genus
+ALJU	Albizia	julibrissin	Fabaceae	Durazz.	species
+TIAM	Tilia	americana	Tiliaceae	L.	species
+ILVE	Ilex	verticillata	Aquifoliaceae	(L.) A. Gray	species
+UNKN	Unknown	Unknown	Unknown	none	none
+SMRO	Smilax	rotundifolia	Smilacaceae	L.	species
+WISTE	Wisteria	spp.	Fabaceae	Nutt.	genus
+ELAN	Elaeagnus	angustifolia	Elaeagnaceae	L.	species
+PATO2	Paulownia	tomentosa	Scrophulariaceae	(Thunb.) Siebold & Zucc. ex Steud	species
+LOMA6	Lonicera	maackii	Caprifoliaceae	(Rupr.) Herder	species
+VACO	Vaccinium	corymbosum	Ericaceae	L.	species
+RHAR3	Rhododendron	arborescens	Ericaceae	(Pursh) Torr.	species
+HEHE	Hedera	helix	Araliaceae	L.	species
+CEOC2	Cephalanthus	occidentalis	Rubiaceae	L.	species
+ELUM	Elaeagnus	umbellata	Elaeagnaceae	Thunb.	species
+UNK3	Unknown 3	unknown 3	Rosaceae	Unknown	family
+RUBUS	Rubus	spp.	Rosaceae	L.	genus
+ULMUS	Ulmus	spp.	Ulmaceae	L.	genus
+PINUS	Pinus	spp.	Pinaceae	L.	genus
+PYCA80	Pyrus	calleryana	Rosaceae	Decne.	species
+ROPA	Rosa	palustris	Rosaceae	Marshall	species
