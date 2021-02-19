@@ -1,5 +1,6 @@
 # serc_deadwood
 If a tree rots in the forest: Linking deadwood decay to greenhouse gas emissions
+A.R. Yatsko, George Washington University
 SERC deadwood study, spring-summer 2021
 
 STUDY: Decay classes are traditionally used in temperate deciduous forests as a rapid snapshot of DW decay. Decay classes use wood structure, hardness, intactness, and appearance to rate deadwood on a 1 (little decomposition) to 5 (almost complete decomposition) scale. However, a forest inventory snapshot with decay class does not capture important temporal changes of DW such as rates of decay and C release. To create a more robust characterization of DW decay, I look to identify relationships between rates of change in decay class and gas release (i.e., CO2 and CH4) as well as changes in microbial communities (which are driving the aforementioned C flux) across different forest floor environments (i.e., aerobic and anaerobic conditions). 
