@@ -176,7 +176,8 @@ DW_2017_5T_CE_sp <- ggplot(dw2017_CE, aes(x=DECAYCLASS, fill = SPCODE)) +
   xlab("Count") + ylab("Decay Class")
 
 ggarrange(DW_2014_sp,DW_2014_CE_sp,DW_2017_3T_sp,DW_2017_3T_CE_sp,
-          DW_2017_5T_sp,DW_2017_5T_CE_sp,  ncol = 2, nrow = 3)
+          DW_2017_5T_sp,DW_2017_5T_CE_sp,  ncol = 2, nrow = 3,
+          common.legend = TRUE, legend="right")
 
 ### 5. PIECE TOGETHER THE PIECES ----
 # make a column that merges stem tag ID with piece identifiers (letter)
@@ -193,15 +194,7 @@ dw2014_CE_piece <- dw2014_CE %>% filter(tagpiece %in% common_elements_piece)
 dw2017_CE_piece <- dw2017_CE %>% filter(tagpiece %in% common_elements_piece)
 # length: 198 (therefore some repetitions for different A or B pieces)
 
-##### 
-# species included messaround 
-  ggplot(dw2017_CE, aes(x=DECAYCLASSORIG, fill = SPCODE )) + 
-  geom_histogram(binwidth = 1)+
-  theme_classic()+
-  geom_vline(aes(xintercept=mean(DECAYCLASSORIG)),
-             color="blue", linetype="dashed", size=1)+
-  ggtitle("2017 DW decay class distribution (common elements) by species") +
-  xlab("Count") + ylab("Decay Class")
+
 
 
 
