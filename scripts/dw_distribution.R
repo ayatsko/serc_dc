@@ -5,6 +5,8 @@
 # dw surveys from 2014 (?) and 2017 -> dw1 and dw2
 library(ggplot2)
 library(ggpubr)
+library(dplyr)
+
 setwd("/Users/abbeyyatsko/Desktop/serc_deadwood/data")
 dw2014 <- read.csv("DW_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("DW_2017.csv", na.strings=c("","NA"))
@@ -118,6 +120,64 @@ DW_2017_5T_CE <- ggplot(dw2017_CE, aes(x=DECAYCLASS)) +
 # compare distributions of decay class for full data set (left) and subsetted by common elements (right)
 ggarrange(DW_2014,DW_2014_CE,DW_2017_3T,DW_2017_3T_CE,DW_2017_5T,DW_2017_5T_CE,  ncol = 2, nrow = 3)
 
+# include some species indicators in the frequency histograms 
+DW_2014_sp <- ggplot(dw2014, aes(x=decay, fill = species)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(decay)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2014 DW decay class distribution") +
+  xlab("Count") + ylab("Decay Class")+
+  theme(legend.position = "none")
+
+DW_2017_3T_sp <- ggplot(dw2017, aes(x=DECAYCLASSORIG, fill = SPCODE)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(DECAYCLASSORIG)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2017 DW decay class distribution (3-tier)") +
+  xlab("Count") + ylab("Decay Class")+
+  theme(legend.position = "none")
+
+# distribution of the original decay class values (5 tier)
+DW_2017_5T_sp <- ggplot(dw2017, aes(x=DECAYCLASS, fill = SPCODE)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(DECAYCLASS)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2017 DW decay class distribution (5-tier)") +
+  xlab("Count") + ylab("Decay Class")+
+  theme(legend.position = "none")
+
+DW_2014_CE_sp <- ggplot(dw2014_CE, aes(x=decay, fill = species)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(decay)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2014 DW decay class distribution (common elements)") +
+  xlab("Count") + ylab("Decay Class")+
+  theme(legend.position = "none")
+
+DW_2017_3T_CE_sp <- ggplot(dw2017_CE, aes(x=DECAYCLASSORIG, fill = SPCODE)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(DECAYCLASSORIG)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2017 DW decay class distribution (3-tier) (common elements)") +
+  xlab("Count") + ylab("Decay Class")+
+  theme(legend.position = "none")
+
+DW_2017_5T_CE_sp <- ggplot(dw2017_CE, aes(x=DECAYCLASS, fill = SPCODE)) + 
+  geom_histogram(binwidth=1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(DECAYCLASS)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2017 DW decay class distribution (5-tier) (common elements)") +
+  xlab("Count") + ylab("Decay Class")
+
+ggarrange(DW_2014_sp,DW_2014_CE_sp,DW_2017_3T_sp,DW_2017_3T_CE_sp,
+          DW_2017_5T_sp,DW_2017_5T_CE_sp,  ncol = 2, nrow = 3)
+
 ### 5. PIECE TOGETHER THE PIECES ----
 # make a column that merges stem tag ID with piece identifiers (letter)
 dw2014_CE$tagpiece <- paste(dw2014_CE$tag,dw2014_CE$piece.id)
@@ -133,6 +193,15 @@ dw2014_CE_piece <- dw2014_CE %>% filter(tagpiece %in% common_elements_piece)
 dw2017_CE_piece <- dw2017_CE %>% filter(tagpiece %in% common_elements_piece)
 # length: 198 (therefore some repetitions for different A or B pieces)
 
+##### 
+# species included messaround 
+  ggplot(dw2017_CE, aes(x=DECAYCLASSORIG, fill = SPCODE )) + 
+  geom_histogram(binwidth = 1)+
+  theme_classic()+
+  geom_vline(aes(xintercept=mean(DECAYCLASSORIG)),
+             color="blue", linetype="dashed", size=1)+
+  ggtitle("2017 DW decay class distribution (common elements) by species") +
+  xlab("Count") + ylab("Decay Class")
 
 
 
