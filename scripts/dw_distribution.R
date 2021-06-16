@@ -7,7 +7,7 @@ library(ggplot2)
 library(ggpubr)
 library(dplyr)
 
-setwd("/Users/abbeyyatsko/Desktop/serc_deadwood/data")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/uncleaned_data")
 dw2014 <- read.csv("DW_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("DW_2017.csv", na.strings=c("","NA"))
 
@@ -22,6 +22,7 @@ completeFun_2014 <- function(dw2014, tag) {
   completeVec <- complete.cases(dw2014[, tag])
   return(dw2014[completeVec, ])
 }
+
 completeFun_2017 <- function(dw2017, STEMTAG) {
   completeVec <- complete.cases(dw2017[, STEMTAG])
   return(dw2017[completeVec, ])
