@@ -109,16 +109,19 @@ dead_2019 %>% summarise_all(n_distinct)
 dead_2019 <- dead_2019 %>% select_if(all_na)
 # good 
 
+# QUESTION - what is the DBH column referring to? similar question to what shows up in dw2017... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
 
+# rename integrity.2021 --> integ (to keep consistent across data sets)
+dead_2019 <- rename(dead_2019, INTEG.2021=INTEGRITY.2021)
 
+# rename decay class column to indicate year 2021 and include new abbreviation  
+dead_2019 <- rename(dead_2019, DC.2021=DECAYCLASS.2021)
 
+# rename length column to indicate year 2021 
+dead_2019 <- rename(dead_2019, LENGTH.2021=LENGTH)
 
 # cut out direction - we recorded this a few times at the beginning of the 2021 survey but then dropped it because the information was not deemed useful for my bigger picture decay class questions
 dead_2019 <- select(dead_2019, -DIRECTION)
-
-
-
-
 ```
 
 
