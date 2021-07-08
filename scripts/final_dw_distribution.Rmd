@@ -13,7 +13,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ### script topic: deadwood survey exploration
 deadwood >10cm from the forestGEO plot at SERC was surveyed over three time points (2014, 2017, 2021). for each survey, collected information varied, including the metrics for decay class. decay class was measured as a 3-tiered variable in 2014, and 5-tiered variable in 2017 and 2021. based on classification descriptions from each protocol, the 5-tiered scale can be translated and broken down into that of the 3-tiered scale 
 
-additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots... 
+additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots, A/B/C pieces (for fragments) and so on... 
 
 following the 2021 survey, data comes from four sources: 
   * dead_2019.csv
@@ -28,6 +28,7 @@ the goal of the study is to track pieces that cover all three time points of the
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
+library(tidyverse)
 
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA")
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
@@ -83,9 +84,23 @@ dw2017 <- completeFun_2017(dw2017, "DECAYCLASS.2017")
 dead_2019 <- completeFun_2019_dead(dead_2019, "DECAYCLASS.2021")
 living_2019 <- completeFun_2019_living(living_2019, "DECAYCLASS.2021")
 # note the new length of the dataframes after being filtered for containing a decay class. makes sense especially for the living_2019 (as most of these stems are not actually dead) 
-
-
-
 ```
 
+#### 3. IDENTIFY COMMON ELEMENTS ACROSS 2014, 2017, living&dead 2019 DATA ----
+goal: we want to see how decay class has progressed through time for a given dw piece, which is indicated by stem tag number. therefore, we first need to identify which stem tags are shared between DW_2014, DW_2017, living_2019, and dead_2019
+
+first, make vectors for dw2014, dw2017, dead_2019, and living_2019 stem tags / identifiers. this will be easier to identify common elements using Reduce(intersect)
+
+```{r common elements}
+# show where 2014 decay class was then recollected in 2021
+dw2014_DC <- dw2014 %>% 
+  select(TAG, DECAYCLASSORIG, DECAYCLASS.2021) %>% 
+  filter(!is.na(DECAYCLASS.2021))
+
+# show where 2017 decay class was then recollected in 2021
+dw2017_DC <- dw2017 %>% 
+  select(STEMTAG, DECAYCLASS.2017, DECAYCLASS.2021) %>% 
+  filter(!is.na(DECAYCLASS.2021))
+
+```
 
