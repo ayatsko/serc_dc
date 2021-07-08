@@ -43,8 +43,8 @@ note the initial length of the dataframes
   * dead_2019 has 460 observations
   * living_2019 has 4662 observations
 
-#### 2. EXPLORE DATA----
-```{r explore data}
+#### 2. EXPLORE DATA: dw2014 ----
+```{r explore data dw2014}
 dw2014 %>% summarise_all(n_distinct)
 # 6 columns have only 1 unique value - these are filled with NAs. therefore, delete these rows all together, as they contain no information for us (just to simplify the dataset)
 # therefore, get rid of columns that are completely empty
@@ -53,14 +53,23 @@ dw2014 <- dw2014 %>% select_if(all_na)
 # 6 removed columns specifically include: STEMTAG, SPOCDE, QX, QY, GC.2021, ANGLE
 # dimensions are now 1371 observations of 19 variables 
 
-# next step is to change TAG --> STEMTAG (to keep them the same across all 3 surveys, as this will be the link across all dataframes for the merge)
+# next step is to change TAG --> STEMTAG (to keep them the same across all 3 surveys, as this will be the link across all data frames for the merge)
+dw2014 <- rename(dw2014, STEMTAG=TAG)
 
+# rename Breakdownstatus.2014 --> BDS.2014
+dw2014 <- rename(dw2014, BDS.2014=BREAKDOWNSTATUS.2014)
 
-#  n rename decay class column to indicate year 
-#  > rename Breakdownstatus.2014 --> BDS.2014
+# rename decay class column to indicate year 2014
+dw2014 <- rename(dw2014, DC.2014=DECAYCLASSORIG)
 
+# rename decay class column to indicate year 2021 and include new abbreviation  
+dw2014 <- rename(dw2014, DC.2021=DECAYCLASS.2021)
 
+# rename DBH to indicate year 2014
+dw2014 <- rename(dw2014, DBH.2014=DBH)
 
+# drop direction column - only one val recorded and I think this was right at the beginning of the 2021 resurvey (we did not end up recording this across the 2021 survey)
+dw2014 <- select(dw2014, -DIRECTION)
 ```
 
 
