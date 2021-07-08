@@ -72,12 +72,31 @@ dw2014 <- rename(dw2014, DBH.2014=DBH)
 dw2014 <- select(dw2014, -DIRECTION)
 ```
 
+#### 3. EXPLORE DATA: dw2017 ----
+```{r explore data dw2017}
+dw2017 %>% summarise_all(n_distinct)
+# looks like the X, X.1, X.2, X.3 variables are just empty with NAs. therefore, choose to remove these blank data columns - should reduce dimensions to 40 variables 
+dw2017 <- dw2017 %>% select_if(all_na)
+# good 
 
+# rename Breakdownstatus.2017 --> BDS.2017
+dw2017 <- rename(dw2017, BDS.2017=BREAKDOWNSTATUS.2017)
 
+# rename decay class column to indicate year 2017 and include new abbreviation  
+dw2017 <- rename(dw2017, DC.2017=DECAYCLASS.2017)
 
+# get rid of DECAYCLASSORIG since it is the 'translated' version of DC.2017 from a 5-tier to a 3-tier decay classification system. this will be onboarded in later steps 
+dw2017 <- select(dw2017, -DECAYCLASSORIG)
 
+# rename decay class column to indicate year 2021 and include new abbreviation  
+dw2017 <- rename(dw2017, DC.2021=DECAYCLASS.2021)
 
+# QUESTION - what is the DBH column referring to? I don't think it matches up to 2014... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
 
+# drop direction and angle column - only one val recorded (ANGLE) and 9 in DIRECTION, we recorded this a few times at the beginning of the 2021 survey but then dropped it because the information was not deemed useful for my bigger picture decay class questions
+dw2017 <- select(dw2017, -DIRECTION, -ANGLE)
+
+```
 
 
 
