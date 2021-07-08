@@ -124,4 +124,27 @@ dead_2019 <- rename(dead_2019, LENGTH.2021=LENGTH)
 dead_2019 <- select(dead_2019, -DIRECTION)
 ```
 
+#### 5. EXPLORE DATA: living_2019 ----
+for this one, the majority of observations are actually for live things. therefore, we only want to pull out what we added in the 2021 dw survey, i.e. things that had died since the demography survey in 2019. these entries are indicated via those with BDS, decay class, any .2021 data essentially. let's filter to begin with by pulling out only stemtags that have a recorded value for BDS.2021 
+
+```{r explore data living_2019}
+# filter out living stems (those in which no info was recorded for in the 2021 dw survey). select for those samples that have recorded values for BDS.2021
+living_2019 <- living_2019 %>%                                       
+  filter(!is.na(BDS.2021)) 
+# now what we have is all of the new recruits of dw since the 2019 survey 
+
+living_2019 %>% summarise_all(n_distinct)
+# looks like it makes sense to drop angle and direction again
+# rename integrity.2021 --> integ (to keep consistent across data sets)
+living_2019 <- rename(living_2019, INTEG.2021=INTEGRITY.2021)
+
+# rename decay class column to indicate year 2021 and include new abbreviation  
+living_2019 <- rename(living_2019, DC.2021=DECAYCLASS.2021)
+
+# rename length column to indicate year 2021 
+living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
+
+# drop direction and angle column - all NAs
+living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
+```
 
