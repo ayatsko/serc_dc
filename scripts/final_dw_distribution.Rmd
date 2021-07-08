@@ -46,4 +46,46 @@ note the initial length of the dataframes
 ```{r filter data}
 # remove observations that do not have a tree tag ID
 # function for complete cases (by survey)
+#View(dw2014)
+completeFun_2014 <- function(dw2014, TAG) {
+  completeVec <- complete.cases(dw2014[, TAG])
+  return(dw2014[completeVec, ])
+}
+#View(dw2017)
+completeFun_2017 <- function(dw2017, STEMTAG) {
+  completeVec <- complete.cases(dw2017[, STEMTAG])
+  return(dw2017[completeVec, ])
+}
+#View(dead_2019)
+completeFun_2019_dead <- function(dead_2019, STEMTAG) {
+  completeVec <- complete.cases(dead_2019[, STEMTAG])
+  return(dead_2019[completeVec, ])
+}
+#View(living_2019)
+completeFun_2019_living <- function(living_2019, STEMTAG) {
+  completeVec <- complete.cases(living_2019[, STEMTAG])
+  return(living_2019[completeVec, ])
+}
+
+dw2014 <- dw2014[dw2014$TAG != "no tag", ]
+dw2014 <- completeFun_2014(dw2014, "TAG")
+dw2017 <- completeFun_2017(dw2017, "STEMTAG")
+dead_2019 <- completeFun_2019_dead(dead_2019, "STEMTAG")
+living_2019 <- completeFun_2019_living(living_2019, "STEMTAG")
+# lengths have changed - makes sense since we are pulling out incomplete tag IDs 
+
+# now, reduce data sets to include only tagged samples (previously filtered for) that ALSO have a recorded decay class
+
+dw2014 <- completeFun_2014(dw2014, "DECAYCLASSORIG")
+# there is a random observation for the 2014 that records a decay class 6 - remove
+dw2014 <- dw2014[dw2014$DECAYCLASSORIG != "6", ] 
+dw2017 <- completeFun_2017(dw2017, "DECAYCLASS.2017")
+dead_2019 <- completeFun_2019_dead(dead_2019, "DECAYCLASS.2021")
+living_2019 <- completeFun_2019_living(living_2019, "DECAYCLASS.2021")
+# note the new length of the dataframes after being filtered for containing a decay class. makes sense especially for the living_2019 (as most of these stems are not actually dead) 
+
+
+
 ```
+
+
