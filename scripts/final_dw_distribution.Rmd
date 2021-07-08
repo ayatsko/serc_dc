@@ -96,7 +96,29 @@ dw2017 <- rename(dw2017, DC.2021=DECAYCLASS.2021)
 # drop direction and angle column - only one val recorded (ANGLE) and 9 in DIRECTION, we recorded this a few times at the beginning of the 2021 survey but then dropped it because the information was not deemed useful for my bigger picture decay class questions
 dw2017 <- select(dw2017, -DIRECTION, -ANGLE)
 
+# last few columns - I don't really know what these ones mean
+# listed: LG.END.DIAM SM.END.DIAM LG.PX LG.PY SM.PX SM.PY CORRXTREE CORRYTREE UTMX_TREES UTMY_TREES
 ```
 
+#### 4. EXPLORE DATA: dead_2019 ----
+essentially what we have in this dataframe is a bunch of individuals that were dead in 2019. in the dw survey for 2021, we did not pick every last one of these up (visual inspection of spreadsheet). however, when new pieces were added to this, we recorded BDS, decay class, and dimensional measurements. all other observations may be coming from 2017 and 2014 surveys. 
+
+```{r explore data dead_2019}
+dead_2019 %>% summarise_all(n_distinct)
+# only one column (ANGLE) without any content (only NAs). therefore, this will be pulled out. 
+dead_2019 <- dead_2019 %>% select_if(all_na)
+# good 
+
+
+
+
+
+# cut out direction - we recorded this a few times at the beginning of the 2021 survey but then dropped it because the information was not deemed useful for my bigger picture decay class questions
+dead_2019 <- select(dead_2019, -DIRECTION)
+
+
+
+
+```
 
 
