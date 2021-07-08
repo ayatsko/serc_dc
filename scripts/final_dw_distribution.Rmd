@@ -1,0 +1,49 @@
+---
+title: "final_dw_distribution"
+author: "abbey yatsko"
+date: "7/8/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# SERC deadwood project
+### script topic: deadwood survey exploration
+deadwood >10cm from the forestGEO plot at SERC was surveyed over three time points (2014, 2017, 2021). for each survey, collected information varied, including the metrics for decay class. decay class was measured as a 3-tiered variable in 2014, and 5-tiered variable in 2017 and 2021. based on classification descriptions from each protocol, the 5-tiered scale can be translated and broken down into that of the 3-tiered scale 
+
+additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots... 
+
+following the 2021 survey, data comes from four sources: 
+  * dead_2019.csv
+  * living_2019.csv
+  * deadwood_2014.csv
+  * deadwood_2017.csv 
+
+the goal of the study is to track pieces that cover all three time points of the survey and then sample these pieces for microbes/fluxes. the goal of this script is to parse through how dw distributions looked at each timepoint, and also how individual pieces move through 'the system' in time 
+
+#### 1. ORGANIZE WORKSPACE----
+```{r workspace}
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA")
+dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
+dw2017 <- read.csv("deadwood_2017.csv", na.strings=c("","NA"))
+dead_2019 <- read.csv("dead_2019.csv", na.strings=c("","NA"))
+living_2019 <- read.csv("living_2019.csv", na.strings=c("","NA"))
+```
+
+note the initial length of the dataframes
+  * 2014 has 1371 observations
+  * 2017 has 682 observations (approximately half of the preceding survey)
+  * dead_2019 has 460 observations
+  * living_2019 has 4662 observations
+
+#### 2. FILTER DATA----
+```{r filter data}
+# remove observations that do not have a tree tag ID
+# function for complete cases (by survey)
+```
