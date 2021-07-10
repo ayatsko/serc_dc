@@ -148,3 +148,8 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
+the next goal would be to merge all of the dataframes 
+
+df.reads %>%
+  left_join(samp.indx) -> df.reads
+
