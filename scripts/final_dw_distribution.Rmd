@@ -148,8 +148,43 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
-the next goal would be to merge all of the dataframes 
+the next goal would be to merge all of the dataframes. first we need to check out how the variables are being understood (make sure they are the same across all 4 sets)
 
-df.reads %>%
-  left_join(samp.indx) -> df.reads
+```{r variable classes}
+str(dw2014)
+dw2014$QUADNAME <- as.factor(dw2014$QUADNAME)
+dw2014$STEMTAG <- as.factor(dw2014$STEMTAG)
+dw2014$DC.2014 <- as.factor(dw2014$DC.2014)
+dw2014$DC.2021 <- as.factor(dw2014$DC.2021)
+dw2014$TOPDIAM.2021 <- as.numeric(dw2014$TOPDIAM.2021)
+dw2014$LENGTH.2014 <- as.numeric(dw2014$LENGTH.2014)
+
+str(dw2017)
+dw2017$QUADNAME <- as.factor(dw2017$QUADNAME)
+dw2017$TAG <- as.factor(dw2017$TAG)
+dw2017$STEMTAG <- as.factor(dw2017$STEMTAG)
+dw2017$DC.2017 <- as.factor(dw2017$DC.2017)
+dw2017$DC.2021 <- as.factor(dw2017$DC.2021)
+
+str(dead_2019)
+dead_2019$QUADNAME <- as.factor(dead_2019$QUADNAME)
+dead_2019$TAG <- as.factor(dead_2019$TAG)
+dead_2019$STEMTAG <- as.factor(dead_2019$STEMTAG)
+dead_2019$INTEG.2021 <- as.character(dead_2019$INTEG.2021)
+dead_2019$DC.2021 <- as.factor(dead_2019$DC.2021)
+
+str(living_2019)
+living_2019$QUADNAME <- as.factor(living_2019$QUADNAME)
+living_2019$TAG <- as.factor(living_2019$TAG)
+living_2019$STEMTAG <- as.factor(living_2019$STEMTAG)
+living_2019$DC.2021 <- as.factor(living_2019$DC.2021)
+
+```
+
+```{r merge}
+dw2014 %>%
+  full_join(dw2017, by = "STEMTAG") -> dw14-17
+
+```
+
 
