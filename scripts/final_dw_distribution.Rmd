@@ -148,6 +148,7 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
+#### 6. MERGING DATA ----
 the next goal would be to merge all of the dataframes. first we need to check out how the variables are being understood (make sure they are the same across all 4 sets)
 
 ```{r variable classes}
@@ -220,6 +221,7 @@ View(dw_merged)
 str(dw_merged)
 ```
 
+#### 7. STARTING WITH VISUALIZATIONS ----
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
 
 ```{r initial viz}
@@ -245,4 +247,25 @@ dc2021 <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=BDS.2021, x
 
 ggarrange(dc2014, dc2017, dc2021, nrow = 1)
 
+# also look at DC distribution but now take into account species...  but just for 2017 and 2021 becuase theres not actually species data that is paired with the 2014 pieces 
+
+dc2017_sp <- ggplot(data = subset(dw_merged, !is.na(DC.2017)), aes(fill=SPCODE, x=DC.2017)) + 
+    geom_bar(position="stack", stat="count")
+
+dc2021_sp <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=SPCODE, x=DC.2021)) + 
+    geom_bar(position="stack", stat="count")
+
+ggarrange(dc2017_sp, dc2021_sp, nrow = 1)
 ```
+
+#### 8. NEXT STEPS AND THINGS I WANT TO KNOW ----
+  * need to pull out samples that account for the following transitions: 
+    * 2014 -> 2017
+    * 2014 -> 2017 -> 2021
+    * 2014 -> 2021
+  * thinking about transition matrix and how to actually code this 
+  * make sure that the dw_merged dataframe is what I think it is 
+  * best way to make rules for using dimensional measurements to construct biomass estimates? 
+  
+##### **THE BIG GOAL IS TO FIGURE OUT WHAT PIECES WE WANT TO TARGET FOR SUBSAMPLING C FLUX AND MICROBES!**
+
