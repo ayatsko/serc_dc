@@ -193,7 +193,8 @@ I think we also want to add HEIGHT.2021 - it is shared across all 3 minus the dw
 dw2014$HEIGHT.2021 <- 'NA'
 str(dw2014)
 dw2014$HEIGHT.2021 <-  as.numeric(dw2014$HEIGHT.2021)
-dw2014$SPCODE <- 'NA'
+dw2014$SPCODE <- NA
+dw2014$SPCODE <-  as.character(dw2014$SPCODE)
 
 # create the merging parameters 
 list_df = list(dw2014,dw2017,dead_2019,living_2019)
@@ -216,6 +217,32 @@ dw2014 %>%
   full_join(dead_2019, by = col_common)%>%
   full_join(living_2019, by = col_common) -> dw_merged
 View(dw_merged)
+str(dw_merged)
 ```
 
+ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
 
+```{r initial viz}
+# what kind of species are we working with? 
+dw_merged %>% 
+        drop_na(SPCODE) %>%
+        ggplot(aes(x = SPCODE))+
+        geom_bar(stat="count")+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# lots of ash, sweetgum, tulip tree... think about what species to target here?
+
+# what is the distribution of decay classes across 2014, 2017, and 2021? while also taking into account the different breakdown status... 
+
+dc2014 <- ggplot(data = subset(dw_merged, !is.na(DC.2014)), aes(fill=BDS.2014, x=DC.2014)) + 
+    geom_bar(position="stack", stat="count")
+
+dc2017 <- ggplot(data = subset(dw_merged, !is.na(DC.2017)), aes(fill=BDS.2017, x=DC.2017)) + 
+    geom_bar(position="stack", stat="count")
+
+dc2021 <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=BDS.2021, x=DC.2021)) + 
+    geom_bar(position="stack", stat="count")
+
+ggarrange(dc2014, dc2017, dc2021, nrow = 1)
+
+```
