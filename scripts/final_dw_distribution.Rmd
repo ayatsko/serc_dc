@@ -179,9 +179,40 @@ living_2019$QUADNAME <- as.factor(living_2019$QUADNAME)
 living_2019$TAG <- as.factor(living_2019$TAG)
 living_2019$STEMTAG <- as.factor(living_2019$STEMTAG)
 living_2019$DC.2021 <- as.factor(living_2019$DC.2021)
-
 ```
 
+before merging, see what the common elements are across: 
+  * 2014 -> 2017 -> 2021
+  * 2014 -> 2017
+  * 2014 -> 2021
+  * 2017 -> 2021
+  
+```{r common elements}
+# > dw2014
+dw2014_tagvec <- dplyr::pull(dw2014, STEMTAG)
+# > dw2017
+dw2017_tagvec <- dplyr::pull(dw2017, STEMTAG)
+# > dead_2019
+dead_2019_tagvec <- dplyr::pull(dead_2019, STEMTAG)
+# > living_2019 
+living_2019_tagvec <- dplyr::pull(living_2019, STEMTAG)
+
+# common elements 2014 -> 2017 -> 2021
+ce_14_17_21 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec, dead_2019_tagvec, living_2019_tagvec))
+ce_14_17_21
+
+# common elements 2014 -> 2017
+ce_14_17 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec))
+ce_14_17
+
+# common elements 2014 -> 2021
+ce_14_21 <- Reduce(intersect, list(dw2014_tagvec, dead_2019_tagvec, living_2019_tagvec))
+ce_14_21
+
+# common elements 2017 -> 2021
+# BAHH this just simply isn't right. agh. 
+
+```
 prep data to merge - need to make sure that all of the columns that need to be 'shared' are included individually in each of the 4 merging datasets. define these as mergeCols: 
  [1] "QUADNAME"     "STEMTAG"      "BDS.2021"     "PIECE.2021"   "INTEG.2021"   "DC.2021"     
  [7] "GC.2021"      "TOPDIAM.2021" "DBH.2021"     "LENGTH.2021" 
@@ -268,4 +299,13 @@ ggarrange(dc2017_sp, dc2021_sp, nrow = 1)
   * best way to make rules for using dimensional measurements to construct biomass estimates? 
   
 ##### **THE BIG GOAL IS TO FIGURE OUT WHAT PIECES WE WANT TO TARGET FOR SUBSAMPLING C FLUX AND MICROBES!**
+
+pull out only sample IDs and then decay classes across the three years 
+```{r decay class dataframe}
+dw_merged_dc <- dw_merged %>%
+  select(c('STEMTAG', 'DC.2014', 'DC.2017', 'DC.2021'))
+
+
+```
+
 
