@@ -203,7 +203,7 @@ before merging, see what the common elements are across:
   * 2014 -> 2021
   * 2017 -> 2021
   
-```{r common elements}
+```{r the common elements}
 # > dw2014
 dw2014_tagvec <- dplyr::pull(dw2014, STEMTAG)
 # > dw2017
