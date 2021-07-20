@@ -218,7 +218,7 @@ ce_14_17 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec))
 ce_14_17
 # there are 169 stemtags that are represented across 2014 and 2017. that's cool. 
 
-# what species are these shared stemtags (2014-2017)
+# what species are these shared stemtags (2014-2017)? this could be useful to look at later
 
 # QUESTION: is it more useful to have a search that pulls out unique stem tags that have records for DC.2014, DC.2017, and DC.2021? this is more so what we are interested in... especially since the 4 seperate dataframes do not actually translate to things from the 2014, 2017, 2021 survey specifically.
 
@@ -247,20 +247,33 @@ for (i in 2:length(list_df)){
 }
 col_common
 
-
 ```
 
-ok now for actual merge based on the col_common variable 
-  * note that
+ok now for actual merge based on the col_common variable - this is all wrong i think (as it previously was)
 ```{r merge}
 # for dw2014 and dw2017 
-dw2014 %>%
-  full_join(dw2017, by = col_common)%>%
-  full_join(dead_2019, by = col_common)%>%
-  full_join(living_2019, by = col_common) -> dw_merged
-View(dw_merged)
-str(dw_merged)
+# FIRST TRY 
+# dw2014 %>%
+#   full_join(dw2017, by = col_common)%>%
+#   full_join(dead_2019, by = col_common)%>%
+#   full_join(living_2019, by = col_common) -> dw_merged
+# View(dw_merged)
+# str(dw_merged)
+
+# I think this is problematic because it doesnt actually keep much of the info (those outside of col_common are omitted??)
+
+# try to do a leftjoin of just 2014 and 2017
+left_join(dw2014, dw2017, by = "STEMTAG") -> dw_merged
+left_join(dw_merged, dead_2019, by = "STEMTAG") -> dw_merged
+left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
+
+# just look at stemtag data and decay classes - see what holds here 
+# subset out everything else
+names(dw_merged)
+select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", ""))
+
 ```
+
 
 #### 7. STARTING WITH VISUALIZATIONS ----
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
