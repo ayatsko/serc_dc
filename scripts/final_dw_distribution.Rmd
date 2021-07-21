@@ -270,7 +270,16 @@ left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
 # just look at stemtag data and decay classes - see what holds here 
 # subset out everything else
 names(dw_merged)
-select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", ""))
+dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y"))
+
+# what stemtags have values for both 2014 and 2017?
+dw_merged_dc %>% drop_na(DC.2014, DC.2017) -> test 
+sum(is.na(dw_merged_dc$DC.2014)) #1
+sum(is.na(dw_merged_dc$DC.2017)) #1133
+# this makes sense because 'test' is narrowed down to 470 obs. 
+
+# now I guess the trouble is that the dc 2021 variable is spread out like all heck! maybe this could be fixed above in a more thrifty manner? or I could attempt it here from the other end of things... 
+
 
 ```
 
