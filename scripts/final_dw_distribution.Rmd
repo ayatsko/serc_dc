@@ -266,11 +266,23 @@ ok now for actual merge based on the col_common variable - this is all wrong i t
 left_join(dw2014, dw2017, by = "STEMTAG") -> dw_merged
 left_join(dw_merged, dead_2019, by = "STEMTAG") -> dw_merged
 left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
+# I think a problem with this method is that when the join happens and there are A and B pieces, everything is assigned the decay class that is merged. therefore it might be best for STEMTAG to be merged with PIECE so that this does not start to misrepresent other 'pieces' 
+
+# ALTERNATIVELY... 
+# THIS ISNT WORKING :"\
+# dw2014 %>%
+#   full_join(dw2017, by = intersect(colnames(dw2014), colnames(dw2017))) %>%
+#   group_by(STEMTAG)-> test2
+# 
+# test2 %>% 
+# full_join(dead_2019, by = intersect(colnames(test2), colnames(dead_2019))) %>%
+#   group_by(STEMTAG) -> test3
 
 # just look at stemtag data and decay classes - see what holds here 
 # subset out everything else
 names(dw_merged)
-dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y"))
+dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y","SPCODE.x", "SPCODE.y", "SPCODE.x.x", "SPCODE.y.y"))
+
 
 # what stemtags have values for both 2014 and 2017?
 dw_merged_dc %>% drop_na(DC.2014, DC.2017) -> test 
@@ -280,12 +292,12 @@ sum(is.na(dw_merged_dc$DC.2017)) #1133
 
 # now I guess the trouble is that the dc 2021 variable is spread out like all heck! maybe this could be fixed above in a more thrifty manner? or I could attempt it here from the other end of things... 
 
-
 ```
 
 
 #### 7. STARTING WITH VISUALIZATIONS ----
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
+NOTE---but i dont think i actually did do it right so maybe we hold off with thinkin about this 
 
 ```{r initial viz}
 # what kind of species are we working with? 
