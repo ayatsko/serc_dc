@@ -11,9 +11,9 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # SERC deadwood project
 ### script topic: deadwood survey exploration
-deadwood >10cm from the forestGEO plot at SERC was surveyed over three time points (2014, 2017, 2021). for each survey, collected information varied, including the metrics for decay class. decay class was measured as a 3-tiered variable in 2014, and 5-tiered variable in 2017 and 2021. based on classification descriptions from each protocol, the 5-tiered scale can be translated and broken down into that of the 3-tiered scale 
+deadwood >10cm from the forestGEO plot at SERC was surveyed over three time points (2014, 2017, 2021). for each survey, collected information varied, including the metrics / measurement scale for decay class. for example, decay class was measured as a 3-tiered variable in 2014, and 5-tiered variable in 2017 and 2021. based on classification descriptions from each protocol, the 5-tiered scale can be translated and broken down into that of the 3-tiered scale. this will be necessary to do when making tri-year comparisons of decay stage.  
 
-additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots, A/B/C pieces (for fragments) and so on... 
+additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots, A/B/C pieces (for fragments) and so on... some of these variables also changed across years. of greatest interest are the dimensional measurements, decay class, species, and then differentiation between snags and logs.
 
 following the 2021 survey, data comes from four sources: 
   * dead_2019.csv
@@ -21,7 +21,7 @@ following the 2021 survey, data comes from four sources:
   * deadwood_2014.csv
   * deadwood_2017.csv 
 
-the goal of the study is to track pieces that cover all three time points of the survey and then sample these pieces for microbes/fluxes. the goal of this script is to parse through how dw distributions looked at each timepoint, and also how individual pieces move through 'the system' in time 
+the goal of the study is to track pieces that cover all three time points of the survey and then sample these pieces for microbes/ C gas fluxes. the goal of this script is to parse through how dw distributions looked at each timepoint, and also how individual pieces move through 'the system' in time 
 
 #### 1. ORGANIZE WORKSPACE----
 ```{r workspace}
@@ -30,7 +30,9 @@ library(ggpubr)
 library(dplyr)
 library(tidyverse)
 
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA")
+setwd("C:/Users/ary24/Desktop/repos/serc_deadwood/FINAL_DATA") # for lab server workflow
+# setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
+
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("deadwood_2017.csv", na.strings=c("","NA"))
 dead_2019 <- read.csv("dead_2019.csv", na.strings=c("","NA"))
@@ -41,7 +43,7 @@ note the initial length of the dataframes
   * 2014 has 1371 observations
   * 2017 has 682 observations (approximately half of the preceding survey)
   * dead_2019 has 460 observations
-  * living_2019 has 4662 observations
+  * living_2019 has 4662 observations (most of these are going to be living trees, of which a handful had died and then moved into the           deadwood pool during the 2021 survey)
 
 #### 2. EXPLORE DATA: dw2014 ----
 ```{r explore data dw2014}
@@ -50,7 +52,7 @@ dw2014 %>% summarise_all(n_distinct)
 # therefore, get rid of columns that are completely empty
 all_na <- function(x) any(!is.na(x))
 dw2014 <- dw2014 %>% select_if(all_na)
-# 6 removed columns specifically include: STEMTAG, SPOCDE, QX, QY, GC.2021, ANGLE
+# 6 removed columns specifically include: STEMTAG, SPOCDE, QX, QY, HEIGHT.2021, ANGLE
 # dimensions are now 1371 observations of 19 variables 
 
 # next step is to change TAG --> STEMTAG (to keep them the same across all 3 surveys, as this will be the link across all data frames for the merge)
@@ -98,6 +100,7 @@ dw2017 <- select(dw2017, -DIRECTION, -ANGLE)
 
 # last few columns - I don't really know what these ones mean
 # listed: LG.END.DIAM SM.END.DIAM LG.PX LG.PY SM.PX SM.PY CORRXTREE CORRYTREE UTMX_TREES UTMY_TREES
+# keep for now, but note clutter
 ```
 
 #### 4. EXPLORE DATA: dead_2019 ----
@@ -134,7 +137,8 @@ living_2019 <- living_2019 %>%
 # now what we have is all of the new recruits of dw since the 2019 survey 
 
 living_2019 %>% summarise_all(n_distinct)
-# looks like it makes sense to drop angle and direction again
+# looks like it makes sense to drop angle and direction again - do this in a few lines to keep things in order 
+
 # rename integrity.2021 --> integ (to keep consistent across data sets)
 living_2019 <- rename(living_2019, INTEG.2021=INTEGRITY.2021)
 
@@ -148,10 +152,22 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
-#### 6. MERGING DATA ----
-the next goal would be to merge all of the dataframes. first we need to check out how the variables are being understood (make sure they are the same across all 4 sets)
+now we should have all our data in a more meaningful, managable, and consistent form (when it comes to variables especially). here they are:
 
-```{r variable classes}
+```{r list polished data frames}
+View(dw2014)
+View(dw2017)
+View(dead_2019)
+View(living_2019)
+```
+
+QUESTION: 
+from dw_2014 should we remove rows that are recorded with 'no tag' for the stemtag variable? having no stem tag is not useful for tracking individual pieces thru time, but could be helpful for overall biomass estimates (especially if some of these no-taggers are big trees that died prior to forestGEO censusing - representing large C sinks thru biomass, even if untracked/unidentifiable at the species level)
+
+#### 6. MERGING DATA ----
+the next goal would be to merge all of the dataframes across the variable 'STEMTAG'. first we need to check out how the variables are being understood (make sure they are the same across all 4 sets)
+
+```{r variable classes, results='hide'}
 str(dw2014)
 dw2014$QUADNAME <- as.factor(dw2014$QUADNAME)
 dw2014$STEMTAG <- as.factor(dw2014$STEMTAG)
@@ -187,7 +203,7 @@ before merging, see what the common elements are across:
   * 2014 -> 2021
   * 2017 -> 2021
   
-```{r common elements}
+```{r the common elements}
 # > dw2014
 dw2014_tagvec <- dplyr::pull(dw2014, STEMTAG)
 # > dw2017
@@ -197,20 +213,14 @@ dead_2019_tagvec <- dplyr::pull(dead_2019, STEMTAG)
 # > living_2019 
 living_2019_tagvec <- dplyr::pull(living_2019, STEMTAG)
 
-# common elements 2014 -> 2017 -> 2021
-ce_14_17_21 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec, dead_2019_tagvec, living_2019_tagvec))
-ce_14_17_21
-
 # common elements 2014 -> 2017
 ce_14_17 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec))
 ce_14_17
+# there are 169 stemtags that are represented across 2014 and 2017. that's cool. 
 
-# common elements 2014 -> 2021
-ce_14_21 <- Reduce(intersect, list(dw2014_tagvec, dead_2019_tagvec, living_2019_tagvec))
-ce_14_21
+# what species are these shared stemtags (2014-2017)? this could be useful to look at later
 
-# common elements 2017 -> 2021
-# BAHH this just simply isn't right. agh. 
+# QUESTION: is it more useful to have a search that pulls out unique stem tags that have records for DC.2014, DC.2017, and DC.2021? this is more so what we are interested in... especially since the 4 seperate dataframes do not actually translate to things from the 2014, 2017, 2021 survey specifically.
 
 ```
 prep data to merge - need to make sure that all of the columns that need to be 'shared' are included individually in each of the 4 merging datasets. define these as mergeCols: 
@@ -236,22 +246,61 @@ for (i in 2:length(list_df)){
   col_common = intersect(col_common, colnames(list_df[[i]]))
 }
 col_common
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0628f37720b18adfb544aa4b57074f86d6fd32a3
 ```
 
-ok now for actual merge based on the col_common variable 
-  * note that
+ok now for actual merge based on the col_common variable - this is all wrong i think (as it previously was)
 ```{r merge}
 # for dw2014 and dw2017 
-dw2014 %>%
-  full_join(dw2017, by = col_common)%>%
-  full_join(dead_2019, by = col_common)%>%
-  full_join(living_2019, by = col_common) -> dw_merged
-View(dw_merged)
-str(dw_merged)
+# FIRST TRY 
+# dw2014 %>%
+#   full_join(dw2017, by = col_common)%>%
+#   full_join(dead_2019, by = col_common)%>%
+#   full_join(living_2019, by = col_common) -> dw_merged
+# View(dw_merged)
+# str(dw_merged)
+
+# I think this is problematic because it doesnt actually keep much of the info (those outside of col_common are omitted??)
+
+# try to do a leftjoin of just 2014 and 2017
+left_join(dw2014, dw2017, by = "STEMTAG") -> dw_merged
+left_join(dw_merged, dead_2019, by = "STEMTAG") -> dw_merged
+left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
+# I think a problem with this method is that when the join happens and there are A and B pieces, everything is assigned the decay class that is merged. therefore it might be best for STEMTAG to be merged with PIECE so that this does not start to misrepresent other 'pieces' 
+
+# ALTERNATIVELY... 
+# THIS ISNT WORKING :"\
+# dw2014 %>%
+#   full_join(dw2017, by = intersect(colnames(dw2014), colnames(dw2017))) %>%
+#   group_by(STEMTAG)-> test2
+# 
+# test2 %>% 
+# full_join(dead_2019, by = intersect(colnames(test2), colnames(dead_2019))) %>%
+#   group_by(STEMTAG) -> test3
+
+# just look at stemtag data and decay classes - see what holds here 
+# subset out everything else
+names(dw_merged)
+dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y","SPCODE.x", "SPCODE.y", "SPCODE.x.x", "SPCODE.y.y"))
+
+
+# what stemtags have values for both 2014 and 2017?
+dw_merged_dc %>% drop_na(DC.2014, DC.2017) -> test 
+sum(is.na(dw_merged_dc$DC.2014)) #1
+sum(is.na(dw_merged_dc$DC.2017)) #1133
+# this makes sense because 'test' is narrowed down to 470 obs. 
+
+# now I guess the trouble is that the dc 2021 variable is spread out like all heck! maybe this could be fixed above in a more thrifty manner? or I could attempt it here from the other end of things... 
+
 ```
+
 
 #### 7. STARTING WITH VISUALIZATIONS ----
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
+NOTE---but i dont think i actually did do it right so maybe we hold off with thinkin about this 
 
 ```{r initial viz}
 # what kind of species are we working with? 
