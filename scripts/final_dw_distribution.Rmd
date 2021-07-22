@@ -30,8 +30,8 @@ library(ggpubr)
 library(dplyr)
 library(tidyverse)
 
-setwd("C:/Users/ary24/Desktop/repos/serc_deadwood/FINAL_DATA") # for lab server workflow
-# setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
+# setwd("C:/Users/ary24/Desktop/repos/serc_deadwood/FINAL_DATA") # for lab server workflow
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
 
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("deadwood_2017.csv", na.strings=c("","NA"))
@@ -113,6 +113,7 @@ dead_2019 <- dead_2019 %>% select_if(all_na)
 # good 
 
 # QUESTION - what is the DBH column referring to? similar question to what shows up in dw2017... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
+  # maybe this is the DBH that corresponds to 2019? check on this
 
 # rename integrity.2021 --> integ (to keep consistent across data sets)
 dead_2019 <- rename(dead_2019, INTEG.2021=INTEGRITY.2021)
@@ -158,11 +159,37 @@ now we should have all our data in a more meaningful, managable, and consistent 
 View(dw2014)
 View(dw2017)
 View(dead_2019)
-View(living_2019)
+View(living_2019) # dead within the living 2019 survey - so techincally all these pieces are actually dead and not living 
 ```
 
 QUESTION: 
 from dw_2014 should we remove rows that are recorded with 'no tag' for the stemtag variable? having no stem tag is not useful for tracking individual pieces thru time, but could be helpful for overall biomass estimates (especially if some of these no-taggers are big trees that died prior to forestGEO censusing - representing large C sinks thru biomass, even if untracked/unidentifiable at the species level)
+  * ask about coordinates for 2014 dw data 
+  * for the time being, let's get rid of 'no tag' stems from 2014 but possibly circle back
+
+```{r fix no stemtag}
+dw2014 <- subset(dw2014, STEMTAG != "no tag")
+
+# merge stemtag and piece for new identifier 
+# dw2014 
+sum(is.na(dw2014$PIECE.2014)) # no NAs in the piece vector
+dw2014$PIECETAG <- paste(dw2014$STEMTAG, dw2014$PIECE.2014, sep = "")
+
+# dw2017
+sum(is.na(dw2017$PIECE.2017)) # 60 NAs in the piece vector 
+dw2017$PIECE.2017 <- ifelse(is.na(dw2017$PIECE.2017), "A", dw2017$PIECE.2017)
+dw2017$PIECETAG <- paste(dw2017$STEMTAG, dw2017$PIECE.2017, sep = "")
+
+# dead_2019
+sum(is.na(dead_2019$PIECE.2021)) # 322 NAs in the piece vector 
+dead_2019$PIECE.2021 <- ifelse(is.na(dead_2019$PIECE.2021), "A", dead_2019$PIECE.2021)
+dead_2019$PIECETAG <- paste(dead_2019$STEMTAG, dead_2019$PIECE.2021, sep = "")
+
+# living_2019 
+sum(is.na(living_2019$PIECE.2021)) # 18 NAs in the piece vector 
+living_2019$PIECE.2021 <- ifelse(is.na(living_2019$PIECE.2021), "A", living_2019$PIECE.2021)
+living_2019$PIECETAG <- paste(living_2019$STEMTAG, living_2019$PIECE.2021, sep = "")
+```
 
 #### 6. MERGING DATA ----
 the next goal would be to merge all of the dataframes across the variable 'STEMTAG'. first we need to check out how the variables are being understood (make sure they are the same across all 4 sets)
@@ -175,6 +202,7 @@ dw2014$DC.2014 <- as.factor(dw2014$DC.2014)
 dw2014$DC.2021 <- as.factor(dw2014$DC.2021)
 dw2014$TOPDIAM.2021 <- as.numeric(dw2014$TOPDIAM.2021)
 dw2014$LENGTH.2014 <- as.numeric(dw2014$LENGTH.2014)
+dw2014$PIECETAG <- as.factor(dw2014$PIECETAG)
 
 str(dw2017)
 dw2017$QUADNAME <- as.factor(dw2017$QUADNAME)
@@ -182,6 +210,8 @@ dw2017$TAG <- as.factor(dw2017$TAG)
 dw2017$STEMTAG <- as.factor(dw2017$STEMTAG)
 dw2017$DC.2017 <- as.factor(dw2017$DC.2017)
 dw2017$DC.2021 <- as.factor(dw2017$DC.2021)
+dw2017$PIECETAG <- as.factor(dw2017$PIECETAG)
+
 
 str(dead_2019)
 dead_2019$QUADNAME <- as.factor(dead_2019$QUADNAME)
@@ -189,12 +219,14 @@ dead_2019$TAG <- as.factor(dead_2019$TAG)
 dead_2019$STEMTAG <- as.factor(dead_2019$STEMTAG)
 dead_2019$INTEG.2021 <- as.character(dead_2019$INTEG.2021)
 dead_2019$DC.2021 <- as.factor(dead_2019$DC.2021)
+dead_2019$PIECETAG <- as.factor(dead_2019$PIECETAG)
 
 str(living_2019)
 living_2019$QUADNAME <- as.factor(living_2019$QUADNAME)
 living_2019$TAG <- as.factor(living_2019$TAG)
 living_2019$STEMTAG <- as.factor(living_2019$STEMTAG)
 living_2019$DC.2021 <- as.factor(living_2019$DC.2021)
+living_2019$PIECETAG <- as.factor(living_2019$PIECETAG)
 ```
 
 before merging, see what the common elements are across: 
@@ -223,6 +255,7 @@ ce_14_17
 # QUESTION: is it more useful to have a search that pulls out unique stem tags that have records for DC.2014, DC.2017, and DC.2021? this is more so what we are interested in... especially since the 4 seperate dataframes do not actually translate to things from the 2014, 2017, 2021 survey specifically.
 
 ```
+
 prep data to merge - need to make sure that all of the columns that need to be 'shared' are included individually in each of the 4 merging datasets. define these as mergeCols: 
  [1] "QUADNAME"     "STEMTAG"      "BDS.2021"     "PIECE.2021"   "INTEG.2021"   "DC.2021"     
  [7] "GC.2021"      "TOPDIAM.2021" "DBH.2021"     "LENGTH.2021" 
@@ -246,10 +279,6 @@ for (i in 2:length(list_df)){
   col_common = intersect(col_common, colnames(list_df[[i]]))
 }
 col_common
-<<<<<<< HEAD
-=======
-
->>>>>>> 0628f37720b18adfb544aa4b57074f86d6fd32a3
 ```
 
 ok now for actual merge based on the col_common variable - this is all wrong i think (as it previously was)
@@ -296,6 +325,20 @@ sum(is.na(dw_merged_dc$DC.2017)) #1133
 # now I guess the trouble is that the dc 2021 variable is spread out like all heck! maybe this could be fixed above in a more thrifty manner? or I could attempt it here from the other end of things... 
 
 ```
+
+MERGE but with help - July 22 @ SERC
+```{r merge with sean's help}
+# full_join method - bringing together by PIECETAG 2 at a time 
+dw_total <- full_join(dw2014, dw2017, by = "PIECETAG")
+dw_total <- full_join(dw_total, dead_2019, by = "PIECETAG")
+dw_total <- full_join(dw_total, living_2019, by = "PIECETAG")
+
+```
+
+
+
+
+
 
 
 #### 7. STARTING WITH VISUALIZATIONS ----
