@@ -236,8 +236,6 @@ for (i in 2:length(list_df)){
   col_common = intersect(col_common, colnames(list_df[[i]]))
 }
 col_common
-
-
 ```
 
 ok now for actual merge based on the col_common variable 
