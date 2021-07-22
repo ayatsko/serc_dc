@@ -338,25 +338,34 @@ abbey: TASKS
 # full_join method - bringing together by PIECETAG 2 at a time 
 # make a vector with 'base ID data' 
 dw_total <- full_join(dw2014, dw2017, by = c("PIECETAG", "STEMTAG", "QUADNAME")) # list key things here in the c() 
-dw_total <- full_join(dw_total, dead_2019, by = "PIECETAG")
-dw_total <- full_join(dw_total, living_2019, by = "PIECETAG")
+dw_total <- full_join(dw_total, dead_2019, by = c("PIECETAG", "STEMTAG", "QUADNAME"))
+dw_total <- full_join(dw_total, living_2019, by = c("PIECETAG", "STEMTAG", "QUADNAME"))
 # the problem here is that things are duplicated (see DC.2021.x, DC.2021.y, etc.) -> we want this to merge under one variable, not multiple ones parsed out  
 
 # quality controlling that repeated entries are the same across 4 replicated variables
-q.col <- grep("GC.2021", names(dw_total))
-names(dw_total)[q.col]
+# BDS.2021, PIECE.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
+# VARIABLE.x, VARIABLE.y, VARIABLE.x.x, VARIABLE.y.y --> these four variables all represent the same 'baseline' variable, but since they are coming from 4 different original locations (dw2014, dw2017, dead_2019, living_2019), they are parsed seperately. the goal is to bring them all together into one single VARIABLE 
+
+# go through and check that for any of these 4 variables, if there are repeats across entries, make sure that the values are the same  
+# GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
+# NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?)
+
+q.col <- grep("HEIGHT.2021", names(dw_total))
+names(dw_total)[q.col]
 col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
 table(col.test)
 head(dw_total[,q.col], 100)
 
 dw_total[which(col.test == 2),q.col]
 
+# what is this, im not quite sure 
 df <- dw_total
 c.name <- "DC.2021"
 
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
+# DONE 
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
@@ -397,12 +406,7 @@ expand.dataframe <-  function(new.df, df, NAME){
 } 
 
 ```
-
-
-
-
-
-
+= 
 
 #### 7. STARTING WITH VISUALIZATIONS ----
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
