@@ -168,7 +168,9 @@ from dw_2014 should we remove rows that are recorded with 'no tag' for the stemt
   * for the time being, let's get rid of 'no tag' stems from 2014 but possibly circle back
 
 ```{r fix no stemtag}
+# get rid of things wihtout a stemtag 
 dw2014 <- subset(dw2014, STEMTAG != "no tag")
+dw2017 <- subset(dw2017, STEMTAG != "NA")
 
 # merge stemtag and piece for new identifier 
 # dw2014 
@@ -236,19 +238,19 @@ before merging, see what the common elements are across:
   * 2017 -> 2021
   
 ```{r the common elements}
-# > dw2014
-dw2014_tagvec <- dplyr::pull(dw2014, STEMTAG)
-# > dw2017
-dw2017_tagvec <- dplyr::pull(dw2017, STEMTAG)
-# > dead_2019
-dead_2019_tagvec <- dplyr::pull(dead_2019, STEMTAG)
-# > living_2019 
-living_2019_tagvec <- dplyr::pull(living_2019, STEMTAG)
-
-# common elements 2014 -> 2017
-ce_14_17 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec))
-ce_14_17
-# there are 169 stemtags that are represented across 2014 and 2017. that's cool. 
+# # > dw2014
+# dw2014_tagvec <- dplyr::pull(dw2014, STEMTAG)
+# # > dw2017
+# dw2017_tagvec <- dplyr::pull(dw2017, STEMTAG)
+# # > dead_2019
+# dead_2019_tagvec <- dplyr::pull(dead_2019, STEMTAG)
+# # > living_2019 
+# living_2019_tagvec <- dplyr::pull(living_2019, STEMTAG)
+# 
+# # common elements 2014 -> 2017
+# ce_14_17 <- Reduce(intersect, list(dw2014_tagvec, dw2017_tagvec))
+# ce_14_17
+# # there are 169 stemtags that are represented across 2014 and 2017. that's cool. 
 
 # what species are these shared stemtags (2014-2017)? this could be useful to look at later
 
@@ -264,21 +266,21 @@ I think we also want to add HEIGHT.2021 - it is shared across all 3 minus the dw
 ```{r pre-merge}
 # add HEIGHT.2021 to dw2014 and populate with NAs - just so that we can get this variable across all 4 dataframes 
 # also do this for SPCODE
-
-dw2014$HEIGHT.2021 <- 'NA'
-str(dw2014)
-dw2014$HEIGHT.2021 <-  as.numeric(dw2014$HEIGHT.2021)
-dw2014$SPCODE <- NA
-dw2014$SPCODE <-  as.character(dw2014$SPCODE)
-
-# create the merging parameters 
-list_df = list(dw2014,dw2017,dead_2019,living_2019)
-
-col_common = colnames(list_df[[1]])
-for (i in 2:length(list_df)){
-  col_common = intersect(col_common, colnames(list_df[[i]]))
-}
-col_common
+# 
+# dw2014$HEIGHT.2021 <- 'NA'
+# str(dw2014)
+# dw2014$HEIGHT.2021 <-  as.numeric(dw2014$HEIGHT.2021)
+# dw2014$SPCODE <- NA
+# dw2014$SPCODE <-  as.character(dw2014$SPCODE)
+# 
+# # create the merging parameters 
+# list_df = list(dw2014,dw2017,dead_2019,living_2019)
+# 
+# col_common = colnames(list_df[[1]])
+# for (i in 2:length(list_df)){
+#   col_common = intersect(col_common, colnames(list_df[[i]]))
+# }
+# col_common
 ```
 
 ok now for actual merge based on the col_common variable - this is all wrong i think (as it previously was)
@@ -295,10 +297,10 @@ ok now for actual merge based on the col_common variable - this is all wrong i t
 # I think this is problematic because it doesnt actually keep much of the info (those outside of col_common are omitted??)
 
 # try to do a leftjoin of just 2014 and 2017
-left_join(dw2014, dw2017, by = "STEMTAG") -> dw_merged
-left_join(dw_merged, dead_2019, by = "STEMTAG") -> dw_merged
-left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
-# I think a problem with this method is that when the join happens and there are A and B pieces, everything is assigned the decay class that is merged. therefore it might be best for STEMTAG to be merged with PIECE so that this does not start to misrepresent other 'pieces' 
+# left_join(dw2014, dw2017, by = "STEMTAG") -> dw_merged
+# left_join(dw_merged, dead_2019, by = "STEMTAG") -> dw_merged
+# left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
+# # I think a problem with this method is that when the join happens and there are A and B pieces, everything is assigned the decay class that is merged. therefore it might be best for STEMTAG to be merged with PIECE so that this does not start to misrepresent other 'pieces' 
 
 # ALTERNATIVELY... 
 # THIS ISNT WORKING :"\
@@ -312,14 +314,14 @@ left_join(dw_merged, living_2019, by = "STEMTAG") -> dw_merged
 
 # just look at stemtag data and decay classes - see what holds here 
 # subset out everything else
-names(dw_merged)
-dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y","SPCODE.x", "SPCODE.y", "SPCODE.x.x", "SPCODE.y.y"))
-
-
-# what stemtags have values for both 2014 and 2017?
-dw_merged_dc %>% drop_na(DC.2014, DC.2017) -> test 
-sum(is.na(dw_merged_dc$DC.2014)) #1
-sum(is.na(dw_merged_dc$DC.2017)) #1133
+# names(dw_merged)
+# dw_merged_dc <- select(dw_merged, c("STEMTAG", "DC.2014", "DC.2021.x", "DC.2017", "DC.2021.y", "DC.2021.x.x",  "DC.2021.y.y","SPCODE.x", "SPCODE.y", "SPCODE.x.x", "SPCODE.y.y"))
+# 
+# 
+# # what stemtags have values for both 2014 and 2017?
+# dw_merged_dc %>% drop_na(DC.2014, DC.2017) -> test 
+# sum(is.na(dw_merged_dc$DC.2014)) #1
+# sum(is.na(dw_merged_dc$DC.2017)) #1133
 # this makes sense because 'test' is narrowed down to 470 obs. 
 
 # now I guess the trouble is that the dc 2021 variable is spread out like all heck! maybe this could be fixed above in a more thrifty manner? or I could attempt it here from the other end of things... 
@@ -327,11 +329,72 @@ sum(is.na(dw_merged_dc$DC.2017)) #1133
 ```
 
 MERGE but with help - July 22 @ SERC
+
+abbey: TASKS
+  * pick key columns 
+  * pick columns that we want disambiguigated 
+  
 ```{r merge with sean's help}
 # full_join method - bringing together by PIECETAG 2 at a time 
-dw_total <- full_join(dw2014, dw2017, by = "PIECETAG")
+# make a vector with 'base ID data' 
+dw_total <- full_join(dw2014, dw2017, by = c("PIECETAG", "STEMTAG", "QUADNAME")) # list key things here in the c() 
 dw_total <- full_join(dw_total, dead_2019, by = "PIECETAG")
 dw_total <- full_join(dw_total, living_2019, by = "PIECETAG")
+# the problem here is that things are duplicated (see DC.2021.x, DC.2021.y, etc.) -> we want this to merge under one variable, not multiple ones parsed out  
+
+# quality controlling that repeated entries are the same across 4 replicated variables
+q.col <- grep("GC.2021", names(dw_total))
+names(dw_total)[q.col]
+
+col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
+table(col.test)
+head(dw_total[,q.col], 100)
+
+dw_total[which(col.test == 2),q.col]
+
+df <- dw_total
+c.name <- "DC.2021"
+
+# STEP 1 
+# write out functions: 'expand.dataframe' and 'consolidate'
+
+# STEP 2
+# create new dataframe with 'core columns' (non-problematic base data)
+new.df <- dw_total[, important.cols]
+# PIECETAG 
+
+# STEP 3
+# select variables to correct and bind to new dataframe
+name.list <- c("DBH", "DC")
+
+# STEP 4 
+for (n in 1:length(name.list)) {
+  new.df <- expand.dataframe(new.df, name.list[n])
+}
+head(new.df)
+
+# CONSOLIDATE (function)
+# function for populating a single column which is techincally the 4 repeated variables merged together 
+consolidate <- function(df){ # c.name is the target name 
+  new.col <- rep(NA, length = nrow(df))
+  for (i in 1:nrow(df)){
+    not.na <- which(!is.na(df[i, ]))
+    n.val <- length(not.na)
+    new.col[i] <- ifelse(n.val != 0, df[i, not.na[1]], NA)
+  }
+  return(new.col)
+}
+
+# EXPAND.DATAFRAME (function)
+expand.dataframe <-  function(new.df, df, NAME){
+  name.cols <- grep(NAME, names(df))
+  prob.cols <- grep(paste(NAME, "2021", sep = "."), names(df))
+  new.df <- cbind(new.df, df[,setdiff(name.cols, prob.cols)])
+  new.col <- consolidate(df[,prob.cols])
+  assign(new.col, paste(NAME, "2021", sep = "."))
+  new.df <- cbind(new.df, new.col)
+  return(new.df)
+} 
 
 ```
 
