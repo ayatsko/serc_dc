@@ -356,12 +356,8 @@ names(dw_total)[q.col]
 col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
 table(col.test)
 head(dw_total[,q.col], 100)
-
+# check and make sure that if there are more than 2 entries, they agree with one another in content 
 dw_total[which(col.test == 2),q.col]
-
-# what is this, im not quite sure 
-df <- dw_total
-c.name <- "DC.2021"
 
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
@@ -369,16 +365,16 @@ c.name <- "DC.2021"
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
-new.df <- dw_total[, important.cols]
-# PIECETAG 
+# important.cols <- "PIECETAG", "STEMTAG", "QUADNAME"
+# new.df <- dw_total[, important.cols]
 
 # STEP 3
 # select variables to correct and bind to new dataframe
-name.list <- c("DBH", "DC")
+name.list <- c("BDS.2021", "INTEG.2021", "DC.2021", "GC.2021", "TOPDIAM.2021", "DBH.2021", "LENGTH.2021", "SPCODE", "HEIGHT.2021")
 
 # STEP 4 
 for (n in 1:length(name.list)) {
-  new.df <- expand.dataframe(new.df, name.list[n])
+  new.df <- expand.dataframe(new.df, dw_total, name.list[n])
 }
 head(new.df)
 
