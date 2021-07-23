@@ -188,7 +188,7 @@ dead_2019$PIECE.2021 <- ifelse(is.na(dead_2019$PIECE.2021), "A", dead_2019$PIECE
 dead_2019$PIECETAG <- paste(dead_2019$STEMTAG, dead_2019$PIECE.2021, sep = "")
 
 # living_2019 
-sum(is.na(living_2019$PIECE.2021)) # 18 NAs in the piece vector 
+which(is.na(living_2019$PIECE.2021)) # 18 NAs in the piece vector 
 living_2019$PIECE.2021 <- ifelse(is.na(living_2019$PIECE.2021), "A", living_2019$PIECE.2021)
 living_2019$PIECETAG <- paste(living_2019$STEMTAG, living_2019$PIECE.2021, sep = "")
 ```
@@ -333,6 +333,7 @@ MERGE but with help - July 22 @ SERC
 abbey: TASKS
   * pick key columns 
   * pick columns that we want disambiguigated 
+  * look into cache = TRUE 
   
 ```{r merge with sean's help}
 # full_join method - bringing together by PIECETAG 2 at a time 
@@ -349,9 +350,10 @@ dw_total <- full_join(dw_total, living_2019, by = c("PIECETAG", "STEMTAG", "QUAD
 
 # go through and check that for any of these 4 variables, if there are repeats across entries, make sure that the values are the same  
 # GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
+
 # NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?)
 
-q.col <- grep("HEIGHT.2021", names(dw_total))
+q.col <- grep("PIECE.2021", names(dw_total))
 names(dw_total)[q.col]
 col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
 table(col.test)
@@ -359,24 +361,37 @@ head(dw_total[,q.col], 100)
 # check and make sure that if there are more than 2 entries, they agree with one another in content 
 dw_total[which(col.test == 2),q.col]
 
+# NOT GOOD: PIECE.2021
+p.index <- paste(dw_total$PIECE.2021.y, dw_total$PIECE.2021.x.x, sep = "")
+table(p.index)
+dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
+
+dw_total[which(p.index == "BA"),]
+# what is happening here is there are dw pieces  from 2014 or 2017 (oftemtimes snags) where originally it is one piece, but then in 2021, the snag broke off and now has a snag AND a log piece. this matters because it captures the importance of the decay as things are fragmenting and turning into logs 
+# pull out stemtags from dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
+# note these later on if they need to be pulled out 
+
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
 # DONE 
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
-# important.cols <- "PIECETAG", "STEMTAG", "QUADNAME"
-# new.df <- dw_total[, important.cols]
+important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME")
+new.df <- dw_total[, important.cols]
 
 # STEP 3
 # select variables to correct and bind to new dataframe
-name.list <- c("BDS.2021", "INTEG.2021", "DC.2021", "GC.2021", "TOPDIAM.2021", "DBH.2021", "LENGTH.2021", "SPCODE", "HEIGHT.2021")
+name.list <- c("BDS", "DC", "TOPDIAM", "DBH", "LENGTH", "SPCODE", "HEIGHT")
+# breaks with GC and INTEG included - therefore take out 
 
 # STEP 4 
 for (n in 1:length(name.list)) {
   new.df <- expand.dataframe(new.df, dw_total, name.list[n])
 }
 head(new.df)
+
+# all is looking better - trouble shooting with STEMTAG - go through line by line in expand.dataframe 
 
 # CONSOLIDATE (function)
 # function for populating a single column which is techincally the 4 repeated variables merged together 
@@ -396,8 +411,9 @@ expand.dataframe <-  function(new.df, df, NAME){
   prob.cols <- grep(paste(NAME, "2021", sep = "."), names(df))
   new.df <- cbind(new.df, df[,setdiff(name.cols, prob.cols)])
   new.col <- consolidate(df[,prob.cols])
-  assign(new.col, paste(NAME, "2021", sep = "."))
+  assign(paste(NAME, "2021", sep = "."), new.col)
   new.df <- cbind(new.df, new.col)
+  names(new.df)[names(new.df) == "new.col"] <- paste(NAME, "2021", sep = ".")
   return(new.df)
 } 
 
