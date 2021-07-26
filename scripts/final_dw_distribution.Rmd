@@ -249,35 +249,50 @@ abbey: TASKS
 dw_total <- full_join(dw2014, dw2017, by = c("PIECETAG", "STEMTAG", "QUADNAME")) # list key things here in the c() 
 dw_total <- full_join(dw_total, dead_2019, by = c("PIECETAG", "STEMTAG", "QUADNAME"))
 dw_total <- full_join(dw_total, living_2019, by = c("PIECETAG", "STEMTAG", "QUADNAME"))
+
 # the problem here is that things are duplicated (see DC.2021.x, DC.2021.y, etc.) -> we want this to merge under one variable, not multiple ones parsed out  
 
 # quality controlling that repeated entries are the same across 4 replicated variables
 # BDS.2021, PIECE.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
-# VARIABLE.x, VARIABLE.y, VARIABLE.x.x, VARIABLE.y.y --> these four variables all represent the same 'baseline' variable, but since they are coming from 4 different original locations (dw2014, dw2017, dead_2019, living_2019), they are parsed seperately. the goal is to bring them all together into one single VARIABLE 
+# VARIABLE.x, VARIABLE.y, VARIABLE.x.x, VARIABLE.y.y --> these four variables all represent the same 'baseline' variable, but since they are coming from 4 different original locations (dw2014, dw2017, dead_2019, living_2019), they are parsed seperately. the goal is to bring them all together into one single VARIABLE in the dw_total df 
 
 # go through and check that for any of these 4 variables, if there are repeats across entries, make sure that the values are the same  
+
+q.col <- grep("BDS.2021", names(dw_total))
+names(dw_total)[q.col]
+col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
+table(col.test)
+# col.test
+#   0   1   2 
+# 806 761   2 
+# this says that there are 806 samples with 0 entries for any version of BDS.2021, there are 761 samples that have one entry across the 4 versions of BDS.2021, and there are 2 samples that have 2 entries across the 4 versions of BDS.2021. what we need to do in the QUALITY CHECK is to make sure that for these 2 samples with 2 entries, there is agreement between them
+head(dw_total[,q.col], 100)
+# check and make sure that if there are more than 2 entries, they agree with one another in content 
+dw_total[which(col.test == 2),q.col]
+# this confirms the above question: are the duplicated entries the same across versions of the BDS.2021 variable?
+
 # GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
 # NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?)
 
+# NOT GOOD: PIECE.2021
 q.col <- grep("PIECE.2021", names(dw_total))
 names(dw_total)[q.col]
 col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
 table(col.test)
-head(dw_total[,q.col], 100)
-# check and make sure that if there are more than 2 entries, they agree with one another in content 
 dw_total[which(col.test == 2),q.col]
+# note that not all of the pieces are matching up 
 
-# NOT GOOD: PIECE.2021
 p.index <- paste(dw_total$PIECE.2021.y, dw_total$PIECE.2021.x.x, sep = "")
+# finding out what the duplicated piece value combos are - disregard NAs, pay attention to AA, BA, CA (see table below)
 table(p.index)
 dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
 
 dw_total[which(p.index == "BA"),]
 # what is happening here is there are dw pieces  from 2014 or 2017 (oftemtimes snags) where originally it is one piece, but then in 2021, the snag broke off and now has a snag AND a log piece. this matters because it captures the importance of the decay as things are fragmenting and turning into logs 
 # pull out stemtags from dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
-# note these later on if they need to be pulled out 
+# note these later on if they need to be pulled out for sampling - representing a special case of decay where the nuance of the system is not captured with the code 
 
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
@@ -291,9 +306,10 @@ new.df <- dw_total[, important.cols]
 # STEP 3
 # select variables to correct and bind to new dataframe
 name.list <- c("BDS", "DC", "TOPDIAM", "DBH", "LENGTH", "SPCODE", "HEIGHT")
-# breaks with GC and INTEG included - therefore take out 
+# the code breaks when GC and INTEG are included - therefore take out 
 
 # STEP 4 
+# first load functions (see below)
 for (n in 1:length(name.list)) {
   new.df <- expand.dataframe(new.df, dw_total, name.list[n])
 }
