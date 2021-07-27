@@ -25,14 +25,58 @@ the goal of the study is to track pieces that cover all three time points of the
 
 #### 1. ORGANIZE WORKSPACE----
 ```{r workspace}
+# libraries
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
 library(tidyverse)
 
+# FUNCTIONS
+# consolidate (function)
+# function for populating a single column which is techincally the 4 repeated variables merged together 
+consolidate <- function(df){ # c.name is the target name 
+  new.col <- rep(NA, length = nrow(df))
+  for (i in 1:nrow(df)){
+    not.na <- which(!is.na(df[i, ]))
+    n.val <- length(not.na)
+    new.col[i] <- ifelse(n.val != 0, df[i, not.na[1]], NA)
+  }
+  return(new.col)
+}
+
+# expand.dataframe (function)
+# function for picking out variables that draw from 4 original dataframes (dw2014, dw2017, dead_2019, living_2019) and then create problematic .x, .y, .x.x, .y.y variables (example: DC.2021.x, DC.2021.y, DC.2021.x.x, DC.2021.y.y). the goal here is to merge the .x, .y etc. variables of the same category into a 'master' variable the converges all 4 values (example of what we want in the end: DC.2021). note that this phenomenon is observed for variables added under the 2021 survey.
+df <- dw_total
+expand.dataframe <-  function(new.df, df, NAME){
+  name.cols <- grep(NAME, names(df))
+  prob.cols <- grep(paste(NAME, "2021", sep = "."), names(df))
+  new.df <- cbind(new.df, df[,setdiff(name.cols, prob.cols)])
+  new.col <- consolidate(df[,prob.cols])
+  assign(paste(NAME, "2021", sep = "."), new.col)
+  new.df <- cbind(new.df, new.col)
+  names(new.df)[names(new.df) == "new.col"] <- paste(NAME, "2021", sep = ".")
+  return(new.df)
+} 
+
+# expand_dataframe_SP (function)
+# resolve SPCODE merge error 
+expand.dataframe_SP <-  function(new.df, df, NAME = "SPCODE"){
+  prob.cols <- grep("SPCODE", names(df))
+  new.col <- consolidate(df[,prob.cols])
+  new.df <- cbind(new.df, new.col)
+  names(new.df)[names(new.df) == "new.col"] <- "SPCODE"
+  return(new.df)
+} 
+
+# all_na (function)
+# use this function to remove any column that is completely populated by NAs (indicates a data-less column that is not of particular use!)
+all_na <- function(x) any(!is.na(x))
+
+# set working directory 
 # setwd("C:/Users/ary24/Desktop/repos/serc_deadwood/FINAL_DATA") # for lab server workflow
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
 
+# read in data 
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("deadwood_2017.csv", na.strings=c("","NA"))
 dead_2019 <- read.csv("dead_2019.csv", na.strings=c("","NA"))
@@ -50,7 +94,7 @@ note the initial length of the dataframes
 dw2014 %>% summarise_all(n_distinct)
 # 6 columns have only 1 unique value - these are filled with NAs. therefore, delete these rows all together, as they contain no information for us (just to simplify the dataset)
 # therefore, get rid of columns that are completely empty
-all_na <- function(x) any(!is.na(x))
+
 dw2014 <- dw2014 %>% select_if(all_na)
 # 6 removed columns specifically include: STEMTAG, SPOCDE, QX, QY, HEIGHT.2021, ANGLE
 # dimensions are now 1371 observations of 19 variables 
@@ -72,6 +116,7 @@ dw2014 <- rename(dw2014, DBH.2014=DBH)
 
 # drop direction column - only one val recorded and I think this was right at the beginning of the 2021 resurvey (we did not end up recording this across the 2021 survey)
 dw2014 <- select(dw2014, -DIRECTION)
+
 ```
 
 #### 3. EXPLORE DATA: dw2017 ----
@@ -206,6 +251,7 @@ dw2014$DC.2021 <- as.factor(dw2014$DC.2021)
 dw2014$TOPDIAM.2021 <- as.numeric(dw2014$TOPDIAM.2021)
 dw2014$LENGTH.2014 <- as.numeric(dw2014$LENGTH.2014)
 dw2014$PIECETAG <- as.factor(dw2014$PIECETAG)
+dw2014$SPCODE <- as.character(dw2014$SPCODE)
 
 str(dw2017)
 dw2017$QUADNAME <- as.factor(dw2017$QUADNAME)
@@ -243,7 +289,7 @@ abbey: TASKS
   * pick columns that we want disambiguigated 
   * look into cache = TRUE 
   
-```{r merge with sean's help}
+```{r prep merge with sean's help}
 # full_join method - bringing together by PIECETAG 2 at a time 
 # make a vector with 'base ID data' 
 dw_total <- full_join(dw2014, dw2017, by = c("PIECETAG", "STEMTAG", "QUADNAME")) # list key things here in the c() 
@@ -275,8 +321,9 @@ dw_total[which(col.test == 2),q.col]
 # GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
 # NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?)
+# also SPCODE 
 
-# NOT GOOD: PIECE.2021
+# for NOT GOOD: PIECE.2021
 q.col <- grep("PIECE.2021", names(dw_total))
 names(dw_total)[q.col]
 col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
@@ -294,9 +341,30 @@ dw_total[which(p.index == "BA"),]
 # pull out stemtags from dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
 # note these later on if they need to be pulled out for sampling - representing a special case of decay where the nuance of the system is not captured with the code 
 
+# for NOT GOOD: SPCODE
+q.col <- grep("SPCODE", names(dw_total))
+names(dw_total)[q.col]
+col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
+table(col.test)
+dw_total[which(col.test == 2),q.col]
+# note that not all of the pieces are matching up - merge the two inner cols to see what is different and if they actually all match up 
+s.index <- paste(dw_total$SPCODE.y, dw_total$SPCODE.x.x, sep = "")
+# finding out what the duplicated piece value combos are - disregard NAs, pay attention to AA, BA, CA (see table below)
+table(s.index)
+
+# problem children are: FRPEFRAM2 (green ash/white ask) and there are only 2 of them so this could be a spot fix perhaps 
+dw_total[which(s.index == "FRPEFRAM2"),]
+# TO DO - send jess these two tags and ask her whats up and which sp we should go with  
+# also maybe not the end of the world if we are not looking to sample ash trees at all 
+```
+
+```{r merge with sean's help}
+# FOR THE REAL MERGE THING - a 4 step process that we must do 
+
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
 # DONE 
+# see above in .rmd code chunk 2: setup 
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
@@ -305,45 +373,25 @@ new.df <- dw_total[, important.cols]
 
 # STEP 3
 # select variables to correct and bind to new dataframe
-name.list <- c("BDS", "DC", "TOPDIAM", "DBH", "LENGTH", "SPCODE", "HEIGHT")
+name.list <- c("BDS", "DC", "TOPDIAM", "DBH", "LENGTH", "HEIGHT")
 # the code breaks when GC and INTEG are included - therefore take out 
 
 # STEP 4 
 # first load functions (see below)
-for (n in 1:length(name.list)) {
-  new.df <- expand.dataframe(new.df, dw_total, name.list[n])
-}
+
+# for the SPCODE issue 
+new.df <- expand.dataframe_SP(new.df, dw_total, "SPCODE")
 head(new.df)
 
-# SPCODE - contributing from 3 sources and not 4 (dw2014 excludes a SPCODE record) - is this why it isn't merging together in step 4? 
-
-###################
-# FUNCTIONS 
-###################
-
-# CONSOLIDATE (function)
-# function for populating a single column which is techincally the 4 repeated variables merged together 
-consolidate <- function(df){ # c.name is the target name 
-  new.col <- rep(NA, length = nrow(df))
-  for (i in 1:nrow(df)){
-    not.na <- which(!is.na(df[i, ]))
-    n.val <- length(not.na)
-    new.col[i] <- ifelse(n.val != 0, df[i, not.na[1]], NA)
-  }
-  return(new.col)
+# for everything else that is important to us 
+for (n in 1:length(name.list)) {
+  new.df <- expand.dataframe(new.df, df = dw_total, name.list[n])
 }
+head(new.df)
+head(dw_total)
+# SPCODE - contributing from 3 sources and not 4 (dw2014 excludes a SPCODE record) - is this why it isn't merging together in step 4? 
+# even after adding SPCODE to 2014, the probelm still persists. I think it is because the variable name 'SPCODE' does not actually include any .2021 tag, and this is what the function is looking for 
 
-# EXPAND.DATAFRAME (function)
-expand.dataframe <-  function(new.df, df, NAME){
-  name.cols <- grep(NAME, names(df))
-  prob.cols <- grep(paste(NAME, "2021", sep = "."), names(df))
-  new.df <- cbind(new.df, df[,setdiff(name.cols, prob.cols)])
-  new.col <- consolidate(df[,prob.cols])
-  assign(paste(NAME, "2021", sep = "."), new.col)
-  new.df <- cbind(new.df, new.col)
-  names(new.df)[names(new.df) == "new.col"] <- paste(NAME, "2021", sep = ".")
-  return(new.df)
-} 
 
 ```
 
@@ -366,11 +414,19 @@ what we are looking for in the dataframe:
   * we also should take a look at how many complete cases exist for the target species that we named (oak, QUERC and     tulip poplar, LITU) 
   
 ```{r subset decay class}
-<- 
+# from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
 
 ```
 
 
+
+
+
+
+
+
+
+# blah blah blah 
 # below things are notes from earlier times 
 
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
