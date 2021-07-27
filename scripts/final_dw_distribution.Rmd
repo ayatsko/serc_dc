@@ -315,7 +315,11 @@ for (n in 1:length(name.list)) {
 }
 head(new.df)
 
-# all is looking better - trouble shooting with STEMTAG - go through line by line in expand.dataframe 
+# SPCODE - contributing from 3 sources and not 4 (dw2014 excludes a SPCODE record) - is this why it isn't merging together in step 4? 
+
+###################
+# FUNCTIONS 
+###################
 
 # CONSOLIDATE (function)
 # function for populating a single column which is techincally the 4 repeated variables merged together 
@@ -342,9 +346,33 @@ expand.dataframe <-  function(new.df, df, NAME){
 } 
 
 ```
-= 
 
-#### 7. STARTING WITH VISUALIZATIONS ----
+#### 7. LOOKING AT JUST DECAY CLASS ----
+this is the next step for thinking about sampling. what do we want to measure, how should we choose pieces? 
+
+goals for sampling: 
+  * gas flux (LGR chamber measurements)
+  * microbes (sawdust, CTAB, then sequencing)
+  * also potentially some kind of moisture content (?)
+  
+considerations for sampling: 
+  * in my grant proposals, I wanted to key into 1-2 species and then sample across all 5 decay classes 
+  * search time could be a little intense - to sample, id be going out into forestGEO with quads and coordinates,       but it would still be a search process
+  * right now, sawing out little cubes seems to be the best bet for subsampling logs. still up for debate is            multiple samples along the length of the log, if a single cube could be sufficient for flux, moisture content,      and also drilling for microbes 
+  
+what we are looking for in the dataframe:
+  * samples that have DC for all 3 'timepoints' (?) (2014, 2017, 2021) -> 'complete cases'
+    * alternatively, is it ok if there are measures for JUST 2014 and 2021, or JUST 2017 and 2021 -> 'partial cases'
+  * we also should take a look at how many complete cases exist for the target species that we named (oak, QUERC and     tulip poplar, LITU) 
+  
+```{r subset decay class}
+<- 
+
+```
+
+
+# below things are notes from earlier times 
+
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
 NOTE---but i dont think i actually did do it right so maybe we hold off with thinkin about this 
 
