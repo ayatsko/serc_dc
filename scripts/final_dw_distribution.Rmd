@@ -368,7 +368,7 @@ dw_total[which(s.index == "FRPEFRAM2"),]
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
-important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME")
+important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME", "QX.x", "QY.x")
 new.df <- dw_total[, important.cols]
 
 # STEP 3
@@ -416,7 +416,7 @@ what we are looking for in the dataframe:
 ```{r subset decay class}
 # from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
 dw_select <- new.df %>%
-  select(c('STEMTAG', 'PIECETAG', 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
+  select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
 # what kind of species are there?
 unique(dw_select$SPCODE)
 
@@ -452,9 +452,12 @@ ggplot(dw_LIST2, aes(x=DC.2021)) + geom_histogram()
 # for pilot data sampling - pull from LITU and LIST2
 
 pilot <- rbind(dw_LITU, dw_LIST2)
+# remove rows that have NA for DC.2021 - not helpful 
+pilot <- pilot[complete.cases(pilot[ , 9]),]
+
+#export .csv
 write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot.csv", row.names = FALSE)
 
-pilot_stems <- pilot$PIECETAG
 ```
 
 
