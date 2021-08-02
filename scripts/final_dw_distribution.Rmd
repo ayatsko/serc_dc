@@ -415,6 +415,31 @@ what we are looking for in the dataframe:
   
 ```{r subset decay class}
 # from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
+dw_select <- new.df %>%
+  select(c('STEMTAG', 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
+# what kind of species are there?
+unique(dw_select$SPCODE)
+
+# what is the distribution of species counts? 
+dw_select %>% 
+        drop_na(SPCODE) %>%
+        ggplot(aes(x = SPCODE))+
+        geom_bar(stat="count")+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+# potential candidates:
+  # tulip poplar (LITU) 
+  # oaks (QUFA, QUERC, QUAL)
+  # red maple (ACRU)
+  # american beech (FAGR)
+  # sweetgum (LIST2)
+
+# what is decay class distribution (2021) for all LITUs 
+dw_LITU <- dplyr::filter(dw_select, SPCODE %in% c("LITU"))
+
+# distribution of decay classes 
+ggplot(df, aes(x=weight)) + geom_histogram()
+
 
 ```
 
