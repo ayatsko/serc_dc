@@ -416,7 +416,7 @@ what we are looking for in the dataframe:
 ```{r subset decay class}
 # from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
 dw_select <- new.df %>%
-  select(c('STEMTAG', 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
+  select(c('STEMTAG', 'PIECETAG', 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
 # what kind of species are there?
 unique(dw_select$SPCODE)
 
@@ -434,13 +434,27 @@ dw_select %>%
   # american beech (FAGR)
   # sweetgum (LIST2)
 
+# SPECIES 1: LITU
 # what is decay class distribution (2021) for all LITUs 
 dw_LITU <- dplyr::filter(dw_select, SPCODE %in% c("LITU"))
 
 # distribution of decay classes 
-ggplot(df, aes(x=weight)) + geom_histogram()
+ggplot(dw_LITU, aes(x=DC.2021)) + geom_histogram()
 
+# SPECIES 2: LIST2
+# what is decay class distribution (2021) for all QURU 
+dw_LIST2 <- dplyr::filter(dw_select, SPCODE %in% c("LIST2"))
 
+# distribution of decay classes 
+ggplot(dw_LIST2, aes(x=DC.2021)) + geom_histogram()
+
+# PILOT DATA GOAL: sample at least 3 replicates from DC 1, 3, 5
+# for pilot data sampling - pull from LITU and LIST2
+
+pilot <- rbind(dw_LITU, dw_LIST2)
+write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot.csv", row.names = FALSE)
+
+pilot_stems <- pilot$PIECETAG
 ```
 
 
