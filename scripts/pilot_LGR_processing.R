@@ -48,3 +48,17 @@ dat.all=cbind(date_time,Year,Month,Day,fDOY,Hour,Min,Sec,dat.all[,-1])
 
 ## Save LGR data as data.table
 dat.all=data.table(dat.all)
+
+# preliminary plots
+# for co2 
+library(scales)
+co2_d1 <- ggplot(dat.all, aes(date_time, X.CO2.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+# for ch4 
+ch4_d1 <- ggplot(dat.all, aes(date_time, X.CH4.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+
+ggarrange(co2_d1, ch4_d1, nrow = 2)
