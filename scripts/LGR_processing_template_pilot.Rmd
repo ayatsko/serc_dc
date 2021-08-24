@@ -9,4 +9,32 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+
 ## LGR Processing Template - PILOT
+### The purpose of this document is to outline the necessary steps to process and visualize gas flux data from the Los Gatos Research Ultraportable Greenhouse Gas Analyzer (LGR UGGA). Gas flux data comes from pieces of deadwood at different stages in the decay trajectory. This document uses pilot data collected from 16 samples of deadwood at the Smithsonian Environmental Research Center (SERC) in Edgewater, MD. All code is adapted from Genevieve Noyce (SERC biogeochemist).  
+
+### Set workspace, load in raw data (.txt files taken directly from the LGR include necessary packages and call on libraries
+
+#### for pilot data - .txt files are coming from two different days ('d1' and 'd2'), therefore two files need to be brought in from respective folders and formatted to be read as .csv
+
+
+```{r workspace}
+library(data.table)
+library(scales)
+library(ggplot2)
+library(ggpubr)
+library(sqldf)
+
+# day 1 data load and prep 
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
+filenames_d1 <- list.files(pattern='f0',full.names=T)
+data_d1 <- lapply(filenames_d1,read.csv,skip=1)
+dat_all_d1 <- do.call(rbind,data_d1)
+
+# day 2 data load and prep 
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
+filenames_d2 <- list.files(pattern='f0',full.names=T)
+data_d2 <- lapply(filenames_d2,read.csv,skip=1)
+dat_all_d2 <- do.call(rbind,data_d2)
+
+```
