@@ -1,0 +1,12 @@
+---
+title: "LGR_processing_template_pilot"
+author: "abbey yatsko"
+date: "8/24/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## LGR Processing Template - PILOT
