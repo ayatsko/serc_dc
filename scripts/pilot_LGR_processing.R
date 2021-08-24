@@ -61,4 +61,40 @@ ch4_d1 <- ggplot(dat.all, aes(date_time, X.CH4.d_ppm)) +
   geom_point() +
   theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
 
+library(ggarrange)
 ggarrange(co2_d1, ch4_d1, nrow = 2)
+
+# step 2 - format plot metadata
+
+# Read in file with plot data
+plots=read.csv('plot_metadata_day1.csv')
+as.Date(plots$Date, '%m/%d/%y')
+str(plots)
+## Pull out date and time data
+plot_date_time_start=strptime(paste(plots$Date,plots$Time_start),'%m/%d/%y %H:%M')
+
+## Add 30 seconds to set start time to be within flux period 
+plot_date_time_start=plot_date_time_start+30
+
+## Add 5 min (300 sec) to flux start time to get flux end time
+plot_date_time_end=plot_date_time_start+300
+
+## Add fDOY columns for start and endtime to dataframe
+fDOY_start=as.numeric(julian(plot_date_time_start,'2021-01-01'))  #Change for year
+fDOY_end=as.numeric(julian(plot_date_time_end,'2021-01-01'))  #Change for year
+plots=cbind(fDOY_start,fDOY_end,plots)
+
+# step 3 - merge LGR files and plot metadata 
+
+## Load sqldf package
+library(sqldf)
+
+## merge LGR/log and plot metadata files by time of flux (in fractional DOY)
+
+## 'inner join' removes all rows that are not during chamber placement
+## 'left join' keeps all data and adds NAs for data not during chamber placement
+dat_merged=sqldf('select * from dat_merge1 inner join plots
+                 on (dat_all.fDOY between plots.fDOY_start and plots.fDOY_end)')
+
+
+
