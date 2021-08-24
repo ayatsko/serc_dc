@@ -93,8 +93,15 @@ library(sqldf)
 
 ## 'inner join' removes all rows that are not during chamber placement
 ## 'left join' keeps all data and adds NAs for data not during chamber placement
-dat_merged=sqldf('select * from dat_merge1 inner join plots
-                 on (dat_all.fDOY between plots.fDOY_start and plots.fDOY_end)')
+dat_merged <- sqldf("select * from dat.all
+                 on (dat_all.fDOY between plots.fDOY_start and plots.fDOY_end)")
 
+seqdf <- data.frame(thetime=seq(100,225,5),thevalue=factor(letters))
+boundsdf <- data.frame(thestart=c(110,160,200),theend=c(130,180,220),groupID=c(555,666,777))
 
+# run the same query using 'between...and' clause
+testquery_2 <- sqldf("select seqdf.thetime, seqdf.thevalue, boundsdf.groupID 
+from seqdf LEFT JOIN boundsdf ON (seqdf.thetime BETWEEN boundsdf.thestart AND boundsdf.theend)")
 
+myquery_2 <- sqldf("select dat_all.fDOY, dat_all.ch4, plots.Time_start 
+from dat_all LEFT JOIN plots ON (dat_all.fDOY BETWEEN plots.fDOY_start AND plots.fDOY_end)")
