@@ -29,6 +29,7 @@ library(scales)
 library(ggplot2)
 library(ggpubr)
 library(sqldf)
+library(dplyr)
 
 # day 1 data load and prep 
 # set working directory
@@ -116,8 +117,8 @@ all looks good - this is remniscent of what we saw when the data was actually be
 ## PART 3 - MERGE WITH METADATA ----
 here, the goal is to take information about each individual sample that was measured for GHG flux and merge it with the flux readout that we just preprocessed. ultimately, we want to say for a given sample, here are all of the timepoints for which GHGs were measured over. then we can extract this information and have the change in GHGs through time (5 min sampling period) for each piece of deadwood that we sampled!
 
-read in and format metadata 
-```{r}
+read in and format metadata, focusing on fraction Day of Year (fDOY):
+```{r format metadata}
 # day 1 data 
 # read in file with metadata
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
@@ -144,20 +145,68 @@ mdd1 <- cbind(fDOY_start,fDOY_end,mdd1)
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
 mdd2 <- read.csv('plot_metadata_day2.csv')
 as.Date(mdd2$Date, '%m/%d/%y')
-
-## Pull out date and time data
 mdd2_date_time_start <- strptime(paste(mdd2$Date,mdd2$Time_start),'%m/%d/%y %H:%M')
-
-## Add 30 seconds to set start time to be within flux period 
 mdd2_date_time_start <- mdd2_date_time_start+30
-
-## Add 5 min (300 sec) - the above 30 sec interlude (total s = 270) to flux start 
-# time to get flux end time
 mdd2_date_time_end <- mdd2_date_time_start+270
-
-## Add fDOY columns for start and endtime to dataframe
 fDOY_start <- as.numeric(julian(mdd2_date_time_start,'2021-01-01'))  #Change for year
 fDOY_end <- as.numeric(julian(mdd2_date_time_end,'2021-01-01'))  #Change for year
 mdd2 <- cbind(fDOY_start,fDOY_end,mdd2)
+```
+
+merge LGR files to plot with metadata - the ultimate goal is to clip out samples and remove 'background' LGR [GHG] measurements (i.e., empty chamber measurements)
+
+```{r sample clip}
+# need to rename co2 and ch4 columns because naming format including '.' messes up the sql code 
+dat_all_d1 <- dat_all_d1 %>%
+  rename(CH4 = X.CH4._ppm,
+         CO2 = X.CO2._ppm)
+dat_all_d2 <- dat_all_d2 %>%
+  rename(CH4 = X.CH4._ppm,
+         CO2 = X.CO2._ppm)
+
+# complete merge for day 1 samples
+# for co2:
+d1query_co2 <- sqldf("select dat_all_d1.fDOY, dat_all_d1.CO2, mdd1.PIECETAG 
+from dat_all_d1 LEFT JOIN mdd1 ON (dat_all_d1.fDOY BETWEEN mdd1.fDOY_start AND mdd1.fDOY_end)")
+# for methane:
+d1query_ch4 <- sqldf("select dat_all_d1.fDOY, dat_all_d1.CH4, mdd1.PIECETAG 
+from dat_all_d1 LEFT JOIN mdd1 ON (dat_all_d1.fDOY BETWEEN mdd1.fDOY_start AND mdd1.fDOY_end)")
+
+# complete merge for day 2 samples
+# for co2:
+d2query_co2 <- sqldf("select dat_all_d2.fDOY, dat_all_d2.CO2, mdd2.PIECETAG 
+from dat_all_d2 LEFT JOIN mdd2 ON (dat_all_d2.fDOY BETWEEN mdd2.fDOY_start AND mdd2.fDOY_end)")
+# for methane:
+d2query_ch4 <- sqldf("select dat_all_d2.fDOY, dat_all_d2.CH4, mdd2.PIECETAG 
+from dat_all_d2 LEFT JOIN mdd2 ON (dat_all_d2.fDOY BETWEEN mdd2.fDOY_start AND mdd2.fDOY_end)")
+
+# NOW that things are in working order and paired up: parse through only the data recorded for ch4 where PIECETAG is recorded - this means that the data actually means something and is assigned to an actual sample
+
+# use 'complete.cases'
+d1query_co2 <- d1query_co2[complete.cases(d1query_co2), ]
+d1query_ch4 <- d1query_ch4[complete.cases(d1query_ch4), ]
+d2query_co2 <- d2query_co2[complete.cases(d2query_co2), ]
+d2query_ch4 <- d2query_ch4[complete.cases(d2query_ch4), ]
+
+# now visually check clipped bits of data 
+# day 1 samples
+# co2
+par(mfrow=c(2,1),mar=c(4,4,1,1))
+with(dat_all_d1,plot(fDOY,CO2,ylim=c(400,1500)))
+with(d1query_co2,plot(fDOY,CO2,ylim=c(400,1500)))
+# ch4 
+par(mfrow=c(2,1),mar=c(4,4,1,1))
+with(dat_all_d1,plot(fDOY,CH4,ylim=c(1.95,3)))
+with(d1query_ch4,plot(fDOY,CH4,ylim=c(1.95,3)))
+
+# day 2 samples
+# co2
+par(mfrow=c(2,1),mar=c(4,4,1,1))
+with(dat_all_d2,plot(fDOY,CO2,ylim=c(400,1500)))
+with(d2query_co2,plot(fDOY,CO2,ylim=c(400,1500)))
+# ch4 
+par(mfrow=c(2,1),mar=c(4,4,1,1))
+with(dat_all_d2,plot(fDOY,CH4,ylim=c(1.95,3)))
+with(d2query_ch4,plot(fDOY,CH4,ylim=c(1.95,3)))
 ```
 
