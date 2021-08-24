@@ -9,15 +9,20 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# LGR Processing Template - PILOT
 
-## LGR Processing Template - PILOT
+## PART 1 - INTRODUCTION ----
 ### The purpose of this document is to outline the necessary steps to process and visualize gas flux data from the Los Gatos Research Ultraportable Greenhouse Gas Analyzer (LGR UGGA). Gas flux data comes from pieces of deadwood at different stages in the decay trajectory. This document uses pilot data collected from 16 samples of deadwood at the Smithsonian Environmental Research Center (SERC) in Edgewater, MD. All code is adapted from Genevieve Noyce (SERC biogeochemist).  
 
 ### Set workspace, load in raw data (.txt files taken directly from the LGR include necessary packages and call on libraries
 
 #### for pilot data - .txt files are coming from two different days ('d1' and 'd2'), therefore two files need to be brought in from respective folders and formatted to be read as .csv
 
+##### we do not want to merge these day 1 and day 2 files however, as the date/time conflict that would occur since the data spans 2 days would be really messy. therefore everything will be preprocessed seperately 
 
+## PART 2 - PREPROCESS ----
+
+setting workspace: 
 ```{r workspace}
 library(data.table)
 library(scales)
@@ -26,15 +31,133 @@ library(ggpubr)
 library(sqldf)
 
 # day 1 data load and prep 
+# set working directory
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
+# get names of all LGR files with GHG concentration, a.k.a the data with the form ('...f####.txt')
 filenames_d1 <- list.files(pattern='f0',full.names=T)
+# read in LGR datafiles to list and go from .txt to .csv 
 data_d1 <- lapply(filenames_d1,read.csv,skip=1)
+# combine all files into single dataframe for day 1 
 dat_all_d1 <- do.call(rbind,data_d1)
 
 # day 2 data load and prep 
+# repeat above steps 
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
 filenames_d2 <- list.files(pattern='f0',full.names=T)
 data_d2 <- lapply(filenames_d2,read.csv,skip=1)
 dat_all_d2 <- do.call(rbind,data_d2)
-
 ```
+
+formatting dates and times: 
+```{r date/time}
+# day 1 data
+# pull out date and time data
+date_time <- strptime(dat_all_d1[,1],format='%m/%d/%Y %H:%M:%S')
+# add year,month,day,JD,hour,min,sec columns to dataframe
+Year <- as.numeric(format(date_time,'%Y'))
+Month <- as.numeric(format(date_time,'%m'))
+Day <- as.numeric(format(date_time,'%d'))
+fDOY <- as.numeric(julian(date_time,'2021-01-01'))  #Change for year
+Hour <- as.numeric(format(date_time,'%k'))
+Min <- as.numeric(format(date_time,'%M'))
+Sec <- as.numeric(format(date_time,'%S'))
+dat_all_d1 <- cbind(date_time,Year,Month,Day,fDOY,Hour,Min,Sec,dat_all_d1[,-1])
+# save LGR data as data.table
+dat_all_d1 <- data.table(dat_all_d1)
+
+# day 2 data
+# process same as above
+date_time <- strptime(dat_all_d2[,1],format='%m/%d/%Y %H:%M:%S')
+Year <- as.numeric(format(date_time,'%Y'))
+Month <- as.numeric(format(date_time,'%m'))
+Day <- as.numeric(format(date_time,'%d'))
+fDOY <- as.numeric(julian(date_time,'2021-01-01'))  #Change for year
+Hour <- as.numeric(format(date_time,'%k'))
+Min <- as.numeric(format(date_time,'%M'))
+Sec <- as.numeric(format(date_time,'%S'))
+dat_all_d2 <- cbind(date_time,Year,Month,Day,fDOY,Hour,Min,Sec,dat_all_d2[,-1])
+dat_all_d2 <- data.table(dat_all_d2)
+```
+
+essentially now what we have is some better-formatted raw data that came straight from the LGR itself. A good checkpoint is to quickly plot this so that we can see (roughly) the same visual that we got for the [GHGs] when the LGR was running in real time. let's do that below: 
+
+preliminary viz: 
+```{r prelimplots}
+# day 1 data 
+# for co2
+co2_d1 <- ggplot(dat_all_d1, aes(date_time, X.CO2.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Day 1 CO2")
+# for ch4 
+ch4_d1 <- ggplot(dat_all_d1, aes(date_time, X.CH4.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Day 1 CH4")
+
+# day 2 data 
+# for co2
+co2_d2 <- ggplot(dat_all_d2, aes(date_time, X.CO2.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Day 2 CO2")
+# for ch4 
+ch4_d2 <- ggplot(dat_all_d2, aes(date_time, X.CH4.d_ppm)) +
+  geom_point() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +
+  ggtitle("Day 2 CH4")
+
+# view all plots together (day 1 and day 2)
+ggarrange(co2_d1, ch4_d1, co2_d2, ch4_d2)
+```
+
+all looks good - this is remniscent of what we saw when the data was actually being collected in real time. time to move on and parse out the [GHGs] for when samples were recorded. 
+
+## PART 3 - MERGE WITH METADATA ----
+here, the goal is to take information about each individual sample that was measured for GHG flux and merge it with the flux readout that we just preprocessed. ultimately, we want to say for a given sample, here are all of the timepoints for which GHGs were measured over. then we can extract this information and have the change in GHGs through time (5 min sampling period) for each piece of deadwood that we sampled!
+
+read in and format metadata 
+```{r}
+# day 1 data 
+# read in file with metadata
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
+mdd1 <- read.csv('plot_metadata_day1.csv')
+as.Date(mdd1$Date, '%m/%d/%y')
+
+## Pull out date and time data
+mdd1_date_time_start <- strptime(paste(mdd1$Date,mdd1$Time_start),'%m/%d/%y %H:%M')
+
+## Add 30 seconds to set start time to be within flux period 
+mdd1_date_time_start <- mdd1_date_time_start+30
+
+## Add 5 min (300 sec) - the above 30 sec interlude (total s = 270) to flux start 
+# time to get flux end time
+mdd1_date_time_end <- mdd1_date_time_start+270
+
+## Add fDOY columns for start and endtime to dataframe
+fDOY_start <- as.numeric(julian(mdd1_date_time_start,'2021-01-01'))  #Change for year
+fDOY_end <- as.numeric(julian(mdd1_date_time_end,'2021-01-01'))  #Change for year
+mdd1 <- cbind(fDOY_start,fDOY_end,mdd1)
+
+# day 2 data 
+# repeat all  steps accordingly 
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
+mdd2 <- read.csv('plot_metadata_day2.csv')
+as.Date(mdd2$Date, '%m/%d/%y')
+
+## Pull out date and time data
+mdd2_date_time_start <- strptime(paste(mdd2$Date,mdd2$Time_start),'%m/%d/%y %H:%M')
+
+## Add 30 seconds to set start time to be within flux period 
+mdd2_date_time_start <- mdd2_date_time_start+30
+
+## Add 5 min (300 sec) - the above 30 sec interlude (total s = 270) to flux start 
+# time to get flux end time
+mdd2_date_time_end <- mdd2_date_time_start+270
+
+## Add fDOY columns for start and endtime to dataframe
+fDOY_start <- as.numeric(julian(mdd2_date_time_start,'2021-01-01'))  #Change for year
+fDOY_end <- as.numeric(julian(mdd2_date_time_end,'2021-01-01'))  #Change for year
+mdd2 <- cbind(fDOY_start,fDOY_end,mdd2)
+```
+
