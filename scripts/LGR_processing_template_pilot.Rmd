@@ -316,5 +316,19 @@ plot4 <- ggplot(d2query, aes(fDOY, CH4_d_umol)) +
 ggarrange(plot3, plot4)
 ```
 
+create seperate files for each sample's flux measurement: 
+```{r}
+# day 1 
+samps1 <- unique(d1query$PIECETAG)
+# what we want the function to do: take the 'query' search for all rows with an entry from the 'samps' vectors, then create a new dataframe (appropriately labeled with the PIECETAG) and run a linear regression on it for both time ~ CO2 and time ~ CH4 
 
+# creates a large df containing splits 9 ways via PIECETAG 
+df <- split(d1query, samps1)
+
+# try to run lm on all of these 9 items of the list? 
+lm(CH4_d_umol ~ fDOY, df)
+
+# day 2 
+samps2 <- unique(d2query$PIECETAG)
+```
 
