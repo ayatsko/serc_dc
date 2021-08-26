@@ -165,48 +165,57 @@ dat_all_d2 <- dat_all_d2 %>%
          CO2 = X.CO2._ppm)
 
 # complete merge for day 1 samples
-# for co2:
-d1query_co2 <- sqldf("select dat_all_d1.fDOY, dat_all_d1.CO2, mdd1.PIECETAG 
-from dat_all_d1 LEFT JOIN mdd1 ON (dat_all_d1.fDOY BETWEEN mdd1.fDOY_start AND mdd1.fDOY_end)")
-# for methane:
-d1query_ch4 <- sqldf("select dat_all_d1.fDOY, dat_all_d1.CH4, mdd1.PIECETAG 
+d1query <- sqldf("select dat_all_d1.fDOY, dat_all_d1.CO2, dat_all_d1.CH4, mdd1.PIECETAG 
 from dat_all_d1 LEFT JOIN mdd1 ON (dat_all_d1.fDOY BETWEEN mdd1.fDOY_start AND mdd1.fDOY_end)")
 
 # complete merge for day 2 samples
-# for co2:
-d2query_co2 <- sqldf("select dat_all_d2.fDOY, dat_all_d2.CO2, mdd2.PIECETAG 
-from dat_all_d2 LEFT JOIN mdd2 ON (dat_all_d2.fDOY BETWEEN mdd2.fDOY_start AND mdd2.fDOY_end)")
-# for methane:
-d2query_ch4 <- sqldf("select dat_all_d2.fDOY, dat_all_d2.CH4, mdd2.PIECETAG 
+
+d2query <- sqldf("select dat_all_d2.fDOY, dat_all_d2.CO2, dat_all_d2.CH4, mdd2.PIECETAG 
 from dat_all_d2 LEFT JOIN mdd2 ON (dat_all_d2.fDOY BETWEEN mdd2.fDOY_start AND mdd2.fDOY_end)")
 
 # NOW that things are in working order and paired up: parse through only the data recorded for ch4 where PIECETAG is recorded - this means that the data actually means something and is assigned to an actual sample
 
 # use 'complete.cases'
-d1query_co2 <- d1query_co2[complete.cases(d1query_co2), ]
-d1query_ch4 <- d1query_ch4[complete.cases(d1query_ch4), ]
-d2query_co2 <- d2query_co2[complete.cases(d2query_co2), ]
-d2query_ch4 <- d2query_ch4[complete.cases(d2query_ch4), ]
+d1query <- d1query[complete.cases(d1query), ]
+d2query <- d2query[complete.cases(d2query), ]
 
 # now visually check clipped bits of data 
 # day 1 samples
-# co2
 par(mfrow=c(2,1),mar=c(4,4,1,1))
-with(dat_all_d1,plot(fDOY,CO2,ylim=c(400,1500)))
-with(d1query_co2,plot(fDOY,CO2,ylim=c(400,1500)))
+with(dat_all_d1,plot(fDOY,CO2,ylim=c(400,1300)))
+with(d1query,plot(fDOY,CO2,ylim=c(400,1300)))
 # ch4 
 par(mfrow=c(2,1),mar=c(4,4,1,1))
-with(dat_all_d1,plot(fDOY,CH4,ylim=c(1.95,3)))
-with(d1query_ch4,plot(fDOY,CH4,ylim=c(1.95,3)))
+with(dat_all_d1,plot(fDOY,CH4,ylim=c(1.95,2.4)))
+with(d1query,plot(fDOY,CH4,ylim=c(1.95,2.4)))
 
 # day 2 samples
 # co2
 par(mfrow=c(2,1),mar=c(4,4,1,1))
-with(dat_all_d2,plot(fDOY,CO2,ylim=c(400,1500)))
-with(d2query_co2,plot(fDOY,CO2,ylim=c(400,1500)))
+with(dat_all_d2,plot(fDOY,CO2,ylim=c(400,1200)))
+with(d2query,plot(fDOY,CO2,ylim=c(400,1200)))
 # ch4 
 par(mfrow=c(2,1),mar=c(4,4,1,1))
-with(dat_all_d2,plot(fDOY,CH4,ylim=c(1.95,3)))
-with(d2query_ch4,plot(fDOY,CH4,ylim=c(1.95,3)))
+with(dat_all_d2,plot(fDOY,CH4,ylim=c(1.95,2.4)))
+with(d2query,plot(fDOY,CH4,ylim=c(1.95,2.4)))
+```
+
+since the data is now merged, we can export the .csv file as an intermediate and do some last minute edits/additions to the file that will come into play in later steps
+
+Add 'flag' columns and export merged data to .csv file saved on server:
+```{r export data}
+d1query$Flag_CH4='Y'
+d1query$Flag_CO2='Y'
+d1query$CH4_notes=''
+d1query$CO2_notes=''
+d2query$Flag_CH4='Y'
+d2query$Flag_CO2='Y'
+d2query$CH4_notes=''
+d2query$CO2_notes=''
+
+# export merged file - day 1
+write.csv(d1query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day1_merged.csv", row.names = FALSE)
+# export merged file - day 2
+write.csv(d2query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day2_merged.csv", row.names = FALSE)
 ```
 
