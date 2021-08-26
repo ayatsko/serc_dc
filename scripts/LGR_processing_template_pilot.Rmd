@@ -354,14 +354,12 @@ samp_130346A_lm_CO2 <- lm(CO2_d_mmol ~ fDOY, samp_130346A)
 summary(samp_130346A_lm_CO2)
 
 # samp_150650A
+samp_150650A_lm_CH4 <- lm(CH4_d_umol ~ fDOY, samp_150650A)
+summary(samp_150650A_lm_CH4)
+samp_150650A_lm_CO2 <- lm(CO2_d_mmol ~ fDOY, samp_150650A)
+summary(samp_150650A_lm_CO2)
 
-
-# samp_152539A
-samp_152539A <- lm(CH4_d_umol ~ fDOY, samp_150650A) 
-summary(samp_152539A)
-
-
-
+# essentially we could keep going on and on with the linear regressions (and hopefully I learn how to write a function to address this unecessary repetition of code-writing)... preliminary looks make sense, but it is important to check that here, no assumptions were checked when running lms. additionally, day 2 data has not been analyzed in the same way 
 
 # day 2 
 samps2 <- unique(d2query$PIECETAG)
