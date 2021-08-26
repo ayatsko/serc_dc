@@ -323,10 +323,45 @@ samps1 <- unique(d1query$PIECETAG)
 # what we want the function to do: take the 'query' search for all rows with an entry from the 'samps' vectors, then create a new dataframe (appropriately labeled with the PIECETAG) and run a linear regression on it for both time ~ CO2 and time ~ CH4 
 
 # creates a large df containing splits 9 ways via PIECETAG 
-df <- split(d1query, samps1)
+df <- split(d1query, d1query$PIECETAG)
+
+for (i in 1:length(df)) {
+  assign(paste0("samp", i), as.data.frame(df[[i]]))
+}
+
+# figure out a better name to rename all of these dataframes (function???)
+samp_130003A <- samp1
+samp_130346A <- samp2
+samp_150650A <- samp3
+samp_152539A <- samp4
+samp_20145A <-  samp5
+samp_30050A <-  samp6
+samp_30242A <-  samp7
+samp_41459A <-  samp8 
+samp_42706A <- samp9
 
 # try to run lm on all of these 9 items of the list? 
-lm(CH4_d_umol ~ fDOY, df)
+# samp_130003A 
+samp_130003A_lm_CH4 <- lm(CH4_d_umol ~ fDOY, samp_130003A)
+summary(samp_130003A_lm_CH4)
+samp_130003A_lm_CO2 <- lm(CO2_d_mmol ~ fDOY, samp_130003A)
+summary(samp_130003A_lm_CO2)
+
+# samp_130346A 
+samp_130346A_lm_CH4 <- lm(CH4_d_umol ~ fDOY, samp_130346A)
+summary(samp_130346A_lm_CH4)
+samp_130346A_lm_CO2 <- lm(CO2_d_mmol ~ fDOY, samp_130346A)
+summary(samp_130346A_lm_CO2)
+
+# samp_150650A
+
+
+# samp_152539A
+samp_152539A <- lm(CH4_d_umol ~ fDOY, samp_150650A) 
+summary(samp_152539A)
+
+
+
 
 # day 2 
 samps2 <- unique(d2query$PIECETAG)
