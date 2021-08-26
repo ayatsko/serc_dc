@@ -219,3 +219,5 @@ write.csv(d1query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/work
 write.csv(d2query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day2_merged.csv", row.names = FALSE)
 ```
 
+
+
