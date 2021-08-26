@@ -220,4 +220,37 @@ write.csv(d2query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/work
 ```
 
 
+```{r graph seperate samples}
+# day 1 co2 (plot 1) and ch4 (plot 2)
+plot1 <- ggplot(d1query, aes(fDOY, CO2)) + 
+  geom_point() + 
+  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
+  stat_smooth(method = "lm") +
+  theme_classic()
+plot2 <- ggplot(d1query, aes(fDOY, CH4)) + 
+  geom_point() + 
+  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
+  stat_smooth(method = "lm") +
+  theme_classic()
 
+ggarrange(plot1, plot2)
+
+# day 2 co2 (plot 3) and ch4 (plot 4)
+plot3 <- ggplot(d2query, aes(fDOY, CO2)) + 
+  geom_point() + 
+  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
+  stat_smooth(method = "lm") +
+  theme_classic()
+plot4 <- ggplot(d2query, aes(fDOY, CH4)) + 
+  geom_point() + 
+  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
+  stat_smooth(method = "lm") +
+  theme_classic()
+
+ggarrange(plot3, plot4)
+```
+
+## PART 4 - PROCESS ----
+dis is where we do the thing such that the data is starting to be processed. from the exported 'intermediate' files, we are now able to create linear plots using (fDOY ~ CO2/CH4) and then further seperating out individual records by PIECETAG. 
+
+read in .csv, remove flagged points, and save CH4 and CO2 data separately 
