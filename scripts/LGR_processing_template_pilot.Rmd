@@ -219,7 +219,10 @@ write.csv(d1query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/work
 write.csv(d2query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day2_merged.csv", row.names = FALSE)
 ```
 
+## PART 4 - PROCESS ----
+dis is where we do the thing such that the data is starting to be processed. from the exported 'intermediate' files, we are now able to create linear plots using (fDOY ~ CO2/CH4) and then further seperating out individual records by PIECETAG. 
 
+to start out by visualizing each individual sample fluxes for both co2 and ch4: 
 ```{r graph seperate samples}
 # day 1 co2 (plot 1) and ch4 (plot 2)
 plot1 <- ggplot(d1query, aes(fDOY, CO2)) + 
@@ -250,7 +253,31 @@ plot4 <- ggplot(d2query, aes(fDOY, CH4)) +
 ggarrange(plot3, plot4)
 ```
 
-## PART 4 - PROCESS ----
-dis is where we do the thing such that the data is starting to be processed. from the exported 'intermediate' files, we are now able to create linear plots using (fDOY ~ CO2/CH4) and then further seperating out individual records by PIECETAG. 
+convert ppm to moles for CH4 and CO2:
 
-read in .csv, remove flagged points, and save CH4 and CO2 data separately 
+```{r ppm to mole conversion}
+## Use known volume of chamber (in m3) to convert 
+## ppm of gas to liters of gas
+# CH4
+dat.CH4$CH4.d_L=
+  # parts CH4 per million parts air * volume of air in chamber (m3) * 1000 L per m3
+  (dat.CH4$X.CH4.d_ppm/1000000) * dat.CH4$Volume * 1000 
+#CO2
+dat.CO2$CO2.d_L=
+  # parts CO2 per million parts air * volume of air in chamber (m3) * 1000 L per m3
+  (dat.CO2$X.CO2.d_ppm/1000000) * dat.CO2$Volume * 1000 
+
+## Use ideal gas law to calculate umol of CH4 or mmol of CO2
+### CHANGE FOR NASA -- this is where you need some temperature data ###
+# CH4
+dat.CH4$CH4.d_umol=
+  # (atm pressure * L CH4) / (R in L*atm/?K*mol * ?K temp) * 10^6 umol/mol
+  ((1*dat.CH4$CH4.d_L)/(0.08206*(dat.CH4$Airtemp_Avg+273)))*10^6
+# CO2
+dat.CO2$CO2.d_mmol=
+  # (atm pressure * L CO2) / (R in L*atm/?K*mol * ?K temp) 
+  ((1*dat.CO2$CO2.d_L)/(0.08206*(dat.CO2$Airtemp_Avg+273)))*10^3
+
+
+```
+
