@@ -314,6 +314,8 @@ plot4 <- ggplot(d2query, aes(fDOY, CH4_d_umol)) +
   theme_classic()
 
 ggarrange(plot3, plot4)
+
+ggarrange(plot1, plot2, plot3, plot4)
 ```
 
 create seperate files for each sample's flux measurement: 
