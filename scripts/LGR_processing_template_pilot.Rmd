@@ -181,6 +181,7 @@ d2query <- d2query[complete.cases(d2query), ]
 
 # now visually check clipped bits of data 
 # day 1 samples
+#co2
 par(mfrow=c(2,1),mar=c(4,4,1,1))
 with(dat_all_d1,plot(fDOY,CO2,ylim=c(400,1300)))
 with(d1query,plot(fDOY,CO2,ylim=c(400,1300)))
