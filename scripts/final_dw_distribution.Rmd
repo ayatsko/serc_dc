@@ -31,9 +31,11 @@ library(ggpubr)
 library(dplyr)
 library(tidyverse)
 
-# FUNCTIONS
-# consolidate (function)
-# function for populating a single column which is techincally the 4 repeated variables merged together 
+# WRITE FUNCTIONS
+
+# 1. consolidate (function)
+# function for populating a single column which is technically the 4 repeated variables merged together 
+# an example of this is how from each of the 4 data sheets, there is the X and Y coords. ideally these should be the same across the 4 datasets, but they still show up seperately for each one
 consolidate <- function(df){ # c.name is the target name 
   new.col <- rep(NA, length = nrow(df))
   for (i in 1:nrow(df)){
@@ -44,7 +46,7 @@ consolidate <- function(df){ # c.name is the target name
   return(new.col)
 }
 
-# expand.dataframe (function)
+# 2. expand.dataframe (function)
 # function for picking out variables that draw from 4 original dataframes (dw2014, dw2017, dead_2019, living_2019) and then create problematic .x, .y, .x.x, .y.y variables (example: DC.2021.x, DC.2021.y, DC.2021.x.x, DC.2021.y.y). the goal here is to merge the .x, .y etc. variables of the same category into a 'master' variable the converges all 4 values (example of what we want in the end: DC.2021). note that this phenomenon is observed for variables added under the 2021 survey.
 df <- dw_total
 expand.dataframe <-  function(new.df, df, NAME){
@@ -58,7 +60,7 @@ expand.dataframe <-  function(new.df, df, NAME){
   return(new.df)
 } 
 
-# expand_dataframe_SP (function)
+# 3. expand_dataframe_SP (function)
 # resolve SPCODE merge error 
 expand.dataframe_SP <-  function(new.df, df, NAME = "SPCODE"){
   prob.cols <- grep("SPCODE", names(df))
@@ -68,15 +70,14 @@ expand.dataframe_SP <-  function(new.df, df, NAME = "SPCODE"){
   return(new.df)
 } 
 
-# all_na (function)
+# 4. all_na (function)
 # use this function to remove any column that is completely populated by NAs (indicates a data-less column that is not of particular use!)
 all_na <- function(x) any(!is.na(x))
 
 # set working directory 
-# setwd("C:/Users/ary24/Desktop/repos/serc_deadwood/FINAL_DATA") # for lab server workflow
 setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
 
-# read in data 
+# read in data - initially coming from 4 field sheets 
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
 dw2017 <- read.csv("deadwood_2017.csv", na.strings=c("","NA"))
 dead_2019 <- read.csv("dead_2019.csv", na.strings=c("","NA"))
@@ -84,10 +85,10 @@ living_2019 <- read.csv("living_2019.csv", na.strings=c("","NA"))
 ```
 
 note the initial length of the dataframes
-  * 2014 has 1371 observations
+  * 2014 has 1371 observations (original survey)
   * 2017 has 682 observations (approximately half of the preceding survey)
-  * dead_2019 has 460 observations
-  * living_2019 has 4662 observations (most of these are going to be living trees, of which a handful had died and then moved into the           deadwood pool during the 2021 survey)
+  * dead_2019 has 460 observations (these are some of the newest confirmed dead pieces - novel since 2017 survey)
+  * living_2019 has 4662 observations (most of these are going to be living trees, of which a handful had died and then moved into the deadwood pool during the 2021 survey)
 
 #### 2. EXPLORE DATA: dw2014 ----
 ```{r explore data dw2014}
@@ -123,6 +124,7 @@ dw2014 <- select(dw2014, -DIRECTION)
 ```{r explore data dw2017}
 dw2017 %>% summarise_all(n_distinct)
 # looks like the X, X.1, X.2, X.3 variables are just empty with NAs. therefore, choose to remove these blank data columns - should reduce dimensions to 40 variables 
+
 dw2017 <- dw2017 %>% select_if(all_na)
 # good 
 
@@ -138,7 +140,7 @@ dw2017 <- select(dw2017, -DECAYCLASSORIG)
 # rename decay class column to indicate year 2021 and include new abbreviation  
 dw2017 <- rename(dw2017, DC.2021=DECAYCLASS.2021)
 
-# QUESTION - what is the DBH column referring to? I don't think it matches up to 2014... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
+# QUESTION - what is the 'DBH' column referring to? I don't think it matches up to 2014 DBH... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
 
 # drop direction and angle column - only one val recorded (ANGLE) and 9 in DIRECTION, we recorded this a few times at the beginning of the 2021 survey but then dropped it because the information was not deemed useful for my bigger picture decay class questions
 dw2017 <- select(dw2017, -DIRECTION, -ANGLE)
@@ -158,7 +160,8 @@ dead_2019 <- dead_2019 %>% select_if(all_na)
 # good 
 
 # QUESTION - what is the DBH column referring to? similar question to what shows up in dw2017... leaving as is for now. TASK - assign meaning to this variable within the context of all surveys 
-  # maybe this is the DBH that corresponds to 2019? check on this
+
+# maybe this is the DBH that corresponds specifically to 2019? check on this - it would have to be referred back to a living survey from before 2019 to check and see if the DBH matches up 
 
 # rename integrity.2021 --> integ (to keep consistent across data sets)
 dead_2019 <- rename(dead_2019, INTEG.2021=INTEGRITY.2021)
