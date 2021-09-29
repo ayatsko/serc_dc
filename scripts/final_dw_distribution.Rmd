@@ -201,13 +201,13 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
-now we should have all our data in a more meaningful, managable, and consistent form (when it comes to variables especially). here they are:
+now we should have all our data in a more meaningful, manageable, and consistent form (when it comes to variables especially). here they are:
 
 ```{r list polished data frames}
 View(dw2014)
 View(dw2017)
 View(dead_2019)
-View(living_2019) # dead within the living 2019 survey - so techincally all these pieces are actually dead and not living 
+View(living_2019) # note on nomenclature - dead within the living 2019 survey - so techincally all these pieces are actually dead and not living 
 ```
 
 QUESTION: 
@@ -221,6 +221,8 @@ dw2014 <- subset(dw2014, STEMTAG != "no tag")
 dw2017 <- subset(dw2017, STEMTAG != "NA")
 
 # merge stemtag and piece for new identifier -> PIECETAG
+# the reason for PIECETAG is to keep the association between tree tag (the number) and then the fragment (indicated by A, B, etc.) -> turn this into a single identifier that we can keep using throughout to have a more fine-tuned view of decay at the fragment level
+
 # dw2014 
 sum(is.na(dw2014$PIECE.2014)) # no NAs in the piece vector
 dw2014$PIECETAG <- paste(dw2014$STEMTAG, dw2014$PIECE.2014, sep = "")
@@ -232,11 +234,13 @@ dw2017$PIECE.2017 <- ifelse(is.na(dw2017$PIECE.2017), "A", dw2017$PIECE.2017)
 dw2017$PIECETAG <- paste(dw2017$STEMTAG, dw2017$PIECE.2017, sep = "")
 
 # dead_2019
+# same here with A pieces being assumed and inserted
 sum(is.na(dead_2019$PIECE.2021)) # 322 NAs in the piece vector 
 dead_2019$PIECE.2021 <- ifelse(is.na(dead_2019$PIECE.2021), "A", dead_2019$PIECE.2021)
 dead_2019$PIECETAG <- paste(dead_2019$STEMTAG, dead_2019$PIECE.2021, sep = "")
 
 # living_2019 
+# same here with A pieces being assumed and inserted
 which(is.na(living_2019$PIECE.2021)) # 18 NAs in the piece vector 
 living_2019$PIECE.2021 <- ifelse(is.na(living_2019$PIECE.2021), "A", living_2019$PIECE.2021)
 living_2019$PIECETAG <- paste(living_2019$STEMTAG, living_2019$PIECE.2021, sep = "")
@@ -290,7 +294,7 @@ prep data to merge - need to make sure that all of the columns that need to be '
 abbey: TASKS
   * pick key columns 
   * pick columns that we want disambiguigated 
-  * look into cache = TRUE 
+  * look into cache = TRUE - this is a thing that skips over time-consuming chunks that have byproducts already existing in the R environment
   
 ```{r prep merge with sean's help}
 # full_join method - bringing together by PIECETAG 2 at a time 
@@ -301,10 +305,10 @@ dw_total <- full_join(dw_total, living_2019, by = c("PIECETAG", "STEMTAG", "QUAD
 
 # the problem here is that things are duplicated (see DC.2021.x, DC.2021.y, etc.) -> we want this to merge under one variable, not multiple ones parsed out  
 
-# quality controlling that repeated entries are the same across 4 replicated variables
+# FIRST quality controlling that repeated entries are the same across 4 replicated variables
 # BDS.2021, PIECE.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
-# VARIABLE.x, VARIABLE.y, VARIABLE.x.x, VARIABLE.y.y --> these four variables all represent the same 'baseline' variable, but since they are coming from 4 different original locations (dw2014, dw2017, dead_2019, living_2019), they are parsed seperately. the goal is to bring them all together into one single VARIABLE in the dw_total df 
+# VARIABLE.x, VARIABLE.y, VARIABLE.x.x, VARIABLE.y.y --> these four variables all represent the same 'baseline' variable, but since they are coming from 4 different original locations (dw2014, dw2017, dead_2019, living_2019), they are parsed separately. the goal is to bring them all together into one single VARIABLE in the dw_total df 
 
 # go through and check that for any of these 4 variables, if there are repeats across entries, make sure that the values are the same  
 
@@ -315,16 +319,18 @@ table(col.test)
 # col.test
 #   0   1   2 
 # 806 761   2 
+
 # this says that there are 806 samples with 0 entries for any version of BDS.2021, there are 761 samples that have one entry across the 4 versions of BDS.2021, and there are 2 samples that have 2 entries across the 4 versions of BDS.2021. what we need to do in the QUALITY CHECK is to make sure that for these 2 samples with 2 entries, there is agreement between them
+
 head(dw_total[,q.col], 100)
 # check and make sure that if there are more than 2 entries, they agree with one another in content 
+
 dw_total[which(col.test == 2),q.col]
 # this confirms the above question: are the duplicated entries the same across versions of the BDS.2021 variable?
 
 # GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
 
-# NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?)
-# also SPCODE 
+# NOT GOOD: PIECE.2021 (maybe this isnt such a big deal since we have PIECETAG which is really what is of interest?), SPCODE 
 
 # for NOT GOOD: PIECE.2021
 q.col <- grep("PIECE.2021", names(dw_total))
@@ -334,14 +340,14 @@ table(col.test)
 dw_total[which(col.test == 2),q.col]
 # note that not all of the pieces are matching up 
 
+# finding out what the duplicated piece value combos are - disregard NAs, pay attention to BA, CA (see table below)
 p.index <- paste(dw_total$PIECE.2021.y, dw_total$PIECE.2021.x.x, sep = "")
-# finding out what the duplicated piece value combos are - disregard NAs, pay attention to AA, BA, CA (see table below)
 table(p.index)
 dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
 
-dw_total[which(p.index == "BA"),]
-# what is happening here is there are dw pieces  from 2014 or 2017 (oftemtimes snags) where originally it is one piece, but then in 2021, the snag broke off and now has a snag AND a log piece. this matters because it captures the importance of the decay as things are fragmenting and turning into logs 
-# pull out stemtags from dw_total[which(p.index == "BA"), c(grep("PIECE", names(dw_total)), grep("DBH", names(dw_total)))]
+dw_total[which(p.index == "CA"),]
+# what is happening here is there are dw pieces from 2014 or 2017 (oftentimes snags) where originally it is one piece, but then in 2021, the snag broke off and now has a snag AND a log piece OR the snag fell completely and then broke into 2 log segments. this matters because it captures the importance of the decay as things are fragmenting and turning into logs from snags.
+
 # note these later on if they need to be pulled out for sampling - representing a special case of decay where the nuance of the system is not captured with the code 
 
 # for NOT GOOD: SPCODE
@@ -351,11 +357,12 @@ col.test <- apply(dw_total[,q.col], 1, function(x) length(which(!is.na(x))))
 table(col.test)
 dw_total[which(col.test == 2),q.col]
 # note that not all of the pieces are matching up - merge the two inner cols to see what is different and if they actually all match up 
-s.index <- paste(dw_total$SPCODE.y, dw_total$SPCODE.x.x, sep = "")
-# finding out what the duplicated piece value combos are - disregard NAs, pay attention to AA, BA, CA (see table below)
+s.index <- paste(dw_total$SPCODE.y, dw_total$SPCODE.x, sep = "")
+# finding out what the duplicated piece value combos for species are - disregard NAs, pay attention to where the species code is not duplicated 
 table(s.index)
 
 # problem children are: FRPEFRAM2 (green ash/white ask) and there are only 2 of them so this could be a spot fix perhaps 
+
 dw_total[which(s.index == "FRPEFRAM2"),]
 # TO DO - send jess these two tags and ask her whats up and which sp we should go with  
 # also maybe not the end of the world if we are not looking to sample ash trees at all 
@@ -366,8 +373,6 @@ dw_total[which(s.index == "FRPEFRAM2"),]
 
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
-# DONE 
-# see above in .rmd code chunk 2: setup 
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
@@ -394,8 +399,6 @@ head(new.df)
 head(dw_total)
 # SPCODE - contributing from 3 sources and not 4 (dw2014 excludes a SPCODE record) - is this why it isn't merging together in step 4? 
 # even after adding SPCODE to 2014, the probelm still persists. I think it is because the variable name 'SPCODE' does not actually include any .2021 tag, and this is what the function is looking for 
-
-
 ```
 
 #### 7. LOOKING AT JUST DECAY CLASS ----
