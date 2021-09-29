@@ -401,7 +401,7 @@ head(dw_total)
 # even after adding SPCODE to 2014, the probelm still persists. I think it is because the variable name 'SPCODE' does not actually include any .2021 tag, and this is what the function is looking for 
 ```
 
-#### 7. LOOKING AT JUST DECAY CLASS ----
+#### 7. FULL STUDY PLAN ----
 this is the next step for thinking about sampling. what do we want to measure, how should we choose pieces? 
 
 goals for sampling: 
@@ -418,8 +418,9 @@ what we are looking for in the dataframe:
   * samples that have DC for all 3 'timepoints' (?) (2014, 2017, 2021) -> 'complete cases'
     * alternatively, is it ok if there are measures for JUST 2014 and 2021, or JUST 2017 and 2021 -> 'partial cases'
   * we also should take a look at how many complete cases exist for the target species that we named (oak, QUERC and tulip poplar, LITU) 
-  
-```{r subset decay class}
+
+#### 8. CHOOSING PILOT DATA ----
+```{r choose pilot data}
 # from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
 dw_select <- new.df %>%
   select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
@@ -432,6 +433,7 @@ dw_select %>%
         ggplot(aes(x = SPCODE))+
         geom_bar(stat="count")+
         theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# this figure shows species and frequency of dw pieces 
 
 # potential candidates:
   # tulip poplar (LITU) 
@@ -439,6 +441,15 @@ dw_select %>%
   # red maple (ACRU)
   # american beech (FAGR)
   # sweetgum (LIST2)
+
+# NOTE that FRPE has high hits, but this is probably because of the ash dieback that is pretty widespread in the marsh region of the plot 
+ash <- subset(dw_select, SPCODE == "FRPE")
+# there are mainly 1s and 2s, some 3s, a handful of 4s, and like a single 5s im pretty sure
+
+ashplot <- ggplot(data = ash, aes(x = DC.2021)) + 
+    geom_bar(position="stack", stat="count")
+
+# BUILD PILOT DATA (Aug 2021)
 
 # SPECIES 1: LITU
 # what is decay class distribution (2021) for all LITUs 
