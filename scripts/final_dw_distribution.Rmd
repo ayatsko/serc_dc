@@ -477,16 +477,7 @@ write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot
 
 ```
 
-
-
-
-
-
-
-
-
-# blah blah blah 
-# below things are notes from earlier times 
+# disregard the below - things are notes from earlier times (post meeting with sean)
 
 ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
 NOTE---but i dont think i actually did do it right so maybe we hold off with thinkin about this 
@@ -524,24 +515,3 @@ dc2021_sp <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=SPCODE, 
 
 ggarrange(dc2017_sp, dc2021_sp, nrow = 1)
 ```
-
-#### 8. NEXT STEPS AND THINGS I WANT TO KNOW ----
-  * need to pull out samples that account for the following transitions: 
-    * 2014 -> 2017
-    * 2014 -> 2017 -> 2021
-    * 2014 -> 2021
-  * thinking about transition matrix and how to actually code this 
-  * make sure that the dw_merged dataframe is what I think it is 
-  * best way to make rules for using dimensional measurements to construct biomass estimates? 
-  
-##### **THE BIG GOAL IS TO FIGURE OUT WHAT PIECES WE WANT TO TARGET FOR SUBSAMPLING C FLUX AND MICROBES!**
-
-pull out only sample IDs and then decay classes across the three years 
-```{r decay class dataframe}
-dw_merged_dc <- dw_merged %>%
-  select(c('STEMTAG', 'DC.2014', 'DC.2017', 'DC.2021'))
-
-
-```
-
-
