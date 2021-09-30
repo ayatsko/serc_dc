@@ -479,6 +479,7 @@ write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot
 
 #### 9. INITIAL PLOTS FOR DW DISTRIBUTION ----
 
+Plot 1: decay class distribution by breakdown status
 ```{r}
 # create plots by year that show decay class and then the proportion of log / snag things that make up the count 
 data <- new.df
@@ -517,44 +518,4 @@ data <- data %>%
     BDS.2021 == "Log" ~ "Log"
     ))
     
-```
-
-
-# disregard the below - things are notes from earlier times (post meeting with sean)
-
-ok so if I did this right (let's pretend), we could theoretically start making sense of the data and doing some viz with it?? 
-NOTE---but i dont think i actually did do it right so maybe we hold off with thinkin about this 
-
-```{r initial viz}
-# what kind of species are we working with? 
-dw_merged %>% 
-        drop_na(SPCODE) %>%
-        ggplot(aes(x = SPCODE))+
-        geom_bar(stat="count")+
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-# lots of ash, sweetgum, tulip tree... think about what species to target here?
-
-# what is the distribution of decay classes across 2014, 2017, and 2021? while also taking into account the different breakdown status... 
-
-dc2014 <- ggplot(data = subset(dw_merged, !is.na(DC.2014)), aes(fill=BDS.2014, x=DC.2014)) + 
-    geom_bar(position="stack", stat="count")
-
-dc2017 <- ggplot(data = subset(dw_merged, !is.na(DC.2017)), aes(fill=BDS.2017, x=DC.2017)) + 
-    geom_bar(position="stack", stat="count")
-
-dc2021 <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=BDS.2021, x=DC.2021)) + 
-    geom_bar(position="stack", stat="count")
-
-ggarrange(dc2014, dc2017, dc2021, nrow = 1)
-
-# also look at DC distribution but now take into account species...  but just for 2017 and 2021 becuase theres not actually species data that is paired with the 2014 pieces 
-
-dc2017_sp <- ggplot(data = subset(dw_merged, !is.na(DC.2017)), aes(fill=SPCODE, x=DC.2017)) + 
-    geom_bar(position="stack", stat="count")
-
-dc2021_sp <- ggplot(data = subset(dw_merged, !is.na(DC.2021)), aes(fill=SPCODE, x=DC.2021)) + 
-    geom_bar(position="stack", stat="count")
-
-ggarrange(dc2017_sp, dc2021_sp, nrow = 1)
 ```
