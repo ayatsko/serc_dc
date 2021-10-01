@@ -246,7 +246,7 @@ to start out by visualizing each individual sample fluxes for both co2 and ch4:
 ```{r graph seperate samples}
 # all of this is in PPM and now combined for day 1 and day 2
 
-# (plot 1) and ch4 (plot 2)
+# co2 (plot 1) and ch4 (plot 2)
 plot1 <- ggplot(data.all, aes(fDOY, CO2, color = DC.2021)) + 
   geom_point() + 
   facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
