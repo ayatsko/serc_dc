@@ -223,100 +223,81 @@ write.csv(d2query,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/work
 ## PART 4 - PROCESS ----
 dis is where we do the thing such that the data is starting to be processed. from the exported 'intermediate' files, we are now able to create linear plots using (fDOY ~ CO2/CH4) and then further seperating out individual records by PIECETAG. 
 
+first, take the merged data for the fluxes and join info for samples (pilot_raw_data.csv) based on 'PIECETAG'
+```{r}
+# load in and merge day 1 and 2 flux data
+d1query <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day1_merged.csv")
+d2query <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/working_files/day2_merged.csv")
+data.all <- rbind(d1query, d2query)
+
+# bring in raw data with DC, moisture, info etc. 
+rawdata <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/pilot_raw_data.csv")
+
+# right join data.all and rawdata
+data.all <-  data.all %>% right_join(rawdata,by="PIECETAG")
+data.all
+
+# change decay class to a factor so we can color the graphs by decay class 
+data.all$DC.2021 <- as.factor(data.all$DC.2021)
+
+```
+
 to start out by visualizing each individual sample fluxes for both co2 and ch4: 
 ```{r graph seperate samples}
-# all of this is in PPM 
-# day 1 co2 (plot 1) and ch4 (plot 2)
-plot1 <- ggplot(d1query, aes(fDOY, CO2)) + 
+# all of this is in PPM and now combined for day 1 and day 2
+
+# (plot 1) and ch4 (plot 2)
+plot1 <- ggplot(data.all, aes(fDOY, CO2, color = DC.2021)) + 
   geom_point() + 
   facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
   stat_smooth(method = "lm") +
   theme_classic()
-plot2 <- ggplot(d1query, aes(fDOY, CH4)) + 
+plot2 <- ggplot(data.all, aes(fDOY, CH4, color = DC.2021)) + 
   geom_point() + 
   facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
   stat_smooth(method = "lm") +
   theme_classic()
 
-ggarrange(plot1, plot2)
-
-# day 2 co2 (plot 3) and ch4 (plot 4)
-plot3 <- ggplot(d2query, aes(fDOY, CO2)) + 
-  geom_point() + 
-  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
-  stat_smooth(method = "lm") +
-  theme_classic()
-plot4 <- ggplot(d2query, aes(fDOY, CH4)) + 
-  geom_point() + 
-  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
-  stat_smooth(method = "lm") +
-  theme_classic()
-
-ggarrange(plot3, plot4)
 ```
 
 convert ppm to moles for CH4 and CO2:
 ```{r ppm to mole conversion}
 # use known volume of the 4oz mason jar chamber (in m3) to convert ppm of gas to liters of gas
-# for day 1 
+
 # CH4
-d1query$CH4_d_L <- 
+data.all$CH4_d_L <- 
   # parts CH4 per million parts air * volume of air in chamber (m3) * 1000 L per m3
-  (d1query$CH4/1000000) * d1query$Volume * 1000 
+  (data.all$CH4/1000000) * data.all$Volume * 1000 
 #CO2
-d1query$CO2_d_L <- 
+data.all$CO2_d_L <- 
   # parts CO2 per million parts air * volume of air in chamber (m3) * 1000 L per m3
-  (d1query$CO2/1000000) * d1query$Volume * 1000 
+  (data.all$CO2/1000000) * data.all$Volume * 1000 
 
 ## Use ideal gas law to calculate umol of CH4 or mmol of CO2
 ### CHANGE FOR NASA -- this is where you need some temperature data ###
 # CH4
-d1query$CH4_d_umol <- 
+data.all$CH4_d_umol <- 
   # (atm pressure * L CH4) / (R in L*atm/?K*mol * ?K temp) * 10^6 umol/mol
-  ((1*d1query$CH4_d_L)/(0.08206*(d1query$AmbT_C+273)))*10^6
+  ((1*data.all$CH4_d_L)/(0.08206*(data.all$AmbT_C+273)))*10^6
 # CO2
-d1query$CO2_d_mmol <- 
+data.all$CO2_d_mmol <- 
   # (atm pressure * L CO2) / (R in L*atm/?K*mol * ?K temp) 
-  ((1*d1query$CO2_d_L)/(0.08206*(d1query$AmbT_C+273)))*10^3
-
-# for day 2 
-d2query$CH4_d_L <- (d2query$CH4/1000000) * d2query$Volume * 1000 
-d2query$CO2_d_L <- (d2query$CO2/1000000) * d2query$Volume * 1000 
-d2query$CH4_d_umol <- ((1*d2query$CH4_d_L)/(0.08206*(d2query$AmbT_C+273)))*10^6
-d2query$CO2_d_mmol <- ((1*d2query$CO2_d_L)/(0.08206*(d2query$AmbT_C+273)))*10^3
+  ((1*data.all$CO2_d_L)/(0.08206*(data.all$AmbT_C+273)))*10^3
 ```
 
 now visualize fluxes for both co2 and ch4 in terms of moles GHG / day: 
 ```{r graph seperate samples}
 # day 1 co2 (plot 1) and ch4 (plot 2)
-plot1 <- ggplot(d1query, aes(fDOY, CO2_d_mmol)) + 
+plot1 <- ggplot(data.all, aes(fDOY, CO2_d_mmol, color = DC.2021)) + 
   geom_point() + 
   facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
   stat_smooth(method = "lm") +
   theme_classic()
-plot2 <- ggplot(d1query, aes(fDOY, CH4_d_umol)) + 
+plot2 <- ggplot(data.all, aes(fDOY, CH4_d_umol, color = DC.2021)) + 
   geom_point() + 
   facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
   stat_smooth(method = "lm") +
   theme_classic()
-
-ggarrange(plot1, plot2)
-
-# day 2 co2 (plot 3) and ch4 (plot 4)
-plot3 <- ggplot(d2query, aes(fDOY, CO2_d_mmol)) + 
-  geom_point() + 
-  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
-  stat_smooth(method = "lm") +
-  theme_classic()
-plot4 <- ggplot(d2query, aes(fDOY, CH4_d_umol)) + 
-  geom_point() + 
-  facet_wrap( ~ PIECETAG, ncol = 3, scales = "free") + 
-  stat_smooth(method = "lm") +
-  theme_classic()
-
-ggarrange(plot3, plot4)
-
-ggarrange(plot1, plot2, plot3, plot4)
 ```
 
 create seperate files for each sample's flux measurement: 
