@@ -300,6 +300,8 @@ plot2 <- ggplot(data.all, aes(fDOY, CH4_d_umol, color = DC.2021)) +
   theme_classic()
 ```
 
+# KEEP WORKING HERE - UNFINISHED FOR THE D1 and D2 MERGE 
+
 create seperate files for each sample's flux measurement: 
 ```{r}
 # day 1 
