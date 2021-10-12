@@ -135,6 +135,8 @@ dw2017 <- rename(dw2017, BDS.2017=BREAKDOWNSTATUS.2017)
 dw2017 <- rename(dw2017, DC.2017=DECAYCLASS.2017)
 
 # get rid of DECAYCLASSORIG since it is the 'translated' version of DC.2017 from a 5-tier to a 3-tier decay classification system. this will be onboarded in later steps 
+# note: the above may not be true. the DECAYCLASSORIG I think is actually just the decay class that was recorded in 2014. it is a 3 tiered scale, but I dont think it is translated 
+
 dw2017 <- select(dw2017, -DECAYCLASSORIG)
 
 # rename decay class column to indicate year 2021 and include new abbreviation  
@@ -519,3 +521,40 @@ data <- data %>%
     ))
     
 ```
+
+#### 10. TRANSITION MATRIX BRAINSTORM ----
+
+what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
+```{r}
+# convert 2017 and 2021 data to 3 tiered decay class scale (I think this is the way that Jess broke it down in the past)
+# 1 = 1
+# 2 = 2,3
+# 3 = 4,5
+
+# convert 2017 and 2021 decay class data to the 3 tiered scale based on the above criteria: 
+# in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
+
+new.df <- new.df %>%
+  mutate(DC.2017_3 = case_when(
+    DC.2017 == "1" ~ "1", 
+    DC.2017 == "2" ~ "2",
+    DC.2017 == "3" ~ "2",
+    DC.2017 == "4" ~ "3", 
+    DC.2017 == "5" ~ "3",
+    ))
+select(new.df, DC.2017, DC.2017_3)
+
+new.df <- new.df %>%
+  mutate(DC.2021_3 = case_when(
+    DC.2021 == "1" ~ "1", 
+    DC.2021 == "2" ~ "2",
+    DC.2021 == "3" ~ "2",
+    DC.2021 == "4" ~ "3", 
+    DC.2021 == "5" ~ "3",
+    ))
+select(new.df, PIECETAG, DC.2021, DC.2021_3)
+
+tm_data <- select (new.df, PIECETAG, DC.2014, DC.2017_3, DC.2021_3)
+
+```
+
