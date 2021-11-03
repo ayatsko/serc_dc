@@ -363,7 +363,7 @@ s.index <- paste(dw_total$SPCODE.y, dw_total$SPCODE.x, sep = "")
 # finding out what the duplicated piece value combos for species are - disregard NAs, pay attention to where the species code is not duplicated 
 table(s.index)
 
-# problem children are: FRPEFRAM2 (green ash/white ask) and there are only 2 of them so this could be a spot fix perhaps 
+# problem children are: FRPEFRAM2 (green ash/white ask) and there are only 3 of them so this could be a spot fix perhaps 
 
 dw_total[which(s.index == "FRPEFRAM2"),]
 # TO DO - send jess these two tags and ask her whats up and which sp we should go with  
@@ -483,25 +483,7 @@ write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot
 
 Plot 1: decay class distribution by breakdown status
 ```{r}
-# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
 data <- new.df
-dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("log","snag"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("Log", "Snag"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-ggarrange(dc2014, dc2017, dc2021, nrow = 1)
-
 # fix the breakdown status for 2014 - change it from the werid language to just log and snag 
 data <- data %>%
   mutate(BDS.2014_new = case_when(
@@ -520,6 +502,24 @@ data <- data %>%
     BDS.2021 == "Log" ~ "Log"
     ))
     
+# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
+
+dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("log","snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+ggarrange(dc2014, dc2017, dc2021, nrow = 1)
 ```
 
 #### 10. TRANSITION MATRIX BRAINSTORM ----
