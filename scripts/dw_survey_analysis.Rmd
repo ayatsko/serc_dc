@@ -1,0 +1,125 @@
+---
+title: "Untitled"
+author: "abbey yatsko"
+date: "11/4/2021"
+output: html_document
+---
+
+read in data and set workspace 
+```{r}
+# call this data 'cleaned_survey_14-21'
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/cleaned_survey_14-21.csv")
+```
+
+#### 1. INITIAL PLOTS FOR DW DISTRIBUTION ----
+
+Plot 1: decay class distribution by breakdown status
+```{r}
+# fix the breakdown status for 2014 - change it from the werid language to just log and snag 
+data <- data %>%
+  mutate(BDS.2014_new = case_when(
+    BDS.2014 == "lying broken" ~ "log", 
+    BDS.2014 == "standing dead" ~ "snag",
+    BDS.2014 == "standing broken" ~ "snag",
+    BDS.2014 == "lying whole" ~ "log", 
+    BDS.2014 == "lying cut" ~ "log",
+    BDS.2014 == "standing cut" ~ "snag"
+    ))
+# fix the breakdown status for 2021 (one 'snag' has an extra space behind it)
+data <- data %>%
+  mutate(BDS.2021_new = case_when(
+    BDS.2021 == "Snag " ~ "Snag", 
+    BDS.2021 == "Snag" ~ "Snag",
+    BDS.2021 == "Log" ~ "Log"
+    ))
+    
+# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
+
+dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("log","snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+ggarrange(dc2014, dc2017, dc2021, nrow = 1)
+
+# NOVERMBER 4 - note that there are now 6 decay classes for 2017 and 2021 surveys. this is because i went back in to the excel files to make the following changes:
+# > 2017: when there was a BDS.2017 == "consumed" 
+# > 2021: when there was a NOTES.2021 == "not found" or some corresponding variety 
+# ultimtaely DC = 6 means that the piece has moved out of the system 
+
+# create plos that shows species distribution 
+
+speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) + 
+  geom_bar(position="stack", stat="count")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+#### 2. GETTING SURVEYS TO TALK ----
+
+two problems: 
+> 2014 is in three-tiers, while 2017/2021 is in 5 
+> we could also split out the 2014 data into 5 tiers, but we need more information on how to do this 
+
+this is code for how collapsing the 2017 and 2021 data could work (skip for now)
+```{r}
+# convert 2017 and 2021 decay class data to the 3 tiered scale based on the above criteria: 
+
+  # 1 = 1
+  # 2 = 2,3
+  # 3 = 4,5
+
+# in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
+# 
+# new.df <- new.df %>%
+#   mutate(DC.2017_3 = case_when(
+#     DC.2017 == "1" ~ "1", 
+#     DC.2017 == "2" ~ "2",
+#     DC.2017 == "3" ~ "2",
+#     DC.2017 == "4" ~ "3", 
+#     DC.2017 == "5" ~ "3",
+#     ))
+# select(new.df, DC.2017, DC.2017_3)
+# 
+# new.df <- new.df %>%
+#   mutate(DC.2021_3 = case_when(
+#     DC.2021 == "1" ~ "1", 
+#     DC.2021 == "2" ~ "2",
+#     DC.2021 == "3" ~ "2",
+#     DC.2021 == "4" ~ "3", 
+#     DC.2021 == "5" ~ "3",
+#     ))
+# select(new.df, PIECETAG, DC.2021, DC.2021_3)
+# 
+# tm_data <- select (new.df, PIECETAG, DC.2014, DC.2017_3, DC.2021_3)
+
+```
+
+#### 3. DECAY CLASS TRANSITION PROBABILITIES ----
+
+main question: what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
+
+```{r}
+# create an empty 6x6 matrix
+# 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
+decay.mat <- matrix(0, nrow = 6, ncol = 6)
+
+# instructions for how to fill in the matrix: 2017 is column, 2021 is row
+for(i in 1:nrow(new.df)) {
+	decay.mat[new.df$DC.2021[i], new.df$DC.2017[i]] <- decay.mat[new.df$DC.2021[i], new.df $DC.2017[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob
+```
+

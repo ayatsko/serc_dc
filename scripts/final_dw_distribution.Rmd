@@ -15,7 +15,7 @@ deadwood >10cm from the forestGEO plot at SERC was surveyed over three time poin
 
 additional metrics measured include: DBH, log/snag, height/length, top diameters (for downed pieces), air/ground contact, position within subplots, A/B/C pieces (for fragments) and so on... some of these variables also changed across years. of greatest interest are the dimensional measurements, decay class, species, and then differentiation between snags and logs.
 
-following the 2021 survey, data comes from four sources: 
+following the 2021 survey, data comes from four sources (in serc_deadwood>FINAL_DATA): 
   * dead_2019.csv
   * living_2019.csv
   * deadwood_2014.csv
@@ -75,7 +75,7 @@ expand.dataframe_SP <-  function(new.df, df, NAME = "SPCODE"){
 all_na <- function(x) any(!is.na(x))
 
 # set working directory 
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA") #for macbook workflow 
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA")
 
 # read in data - initially coming from 4 field sheets 
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
@@ -203,14 +203,7 @@ living_2019 <- rename(living_2019, LENGTH.2021=LENGTH)
 living_2019 <- select(living_2019, -DIRECTION, -ANGLE)
 ```
 
-now we should have all our data in a more meaningful, manageable, and consistent form (when it comes to variables especially). here they are:
-
-```{r list polished data frames}
-View(dw2014)
-View(dw2017)
-View(dead_2019)
-View(living_2019) # note on nomenclature - dead within the living 2019 survey - so techincally all these pieces are actually dead and not living 
-```
+now we should have all our data in a more meaningful, manageable, and consistent form (when it comes to variables especially)
 
 QUESTION: 
 from dw_2014 should we remove rows that are recorded with 'no tag' for the stemtag variable? having no stem tag is not useful for tracking individual pieces thru time, but could be helpful for overall biomass estimates (especially if some of these no-taggers are big trees that died prior to forestGEO censusing - representing large C sinks thru biomass, even if untracked/unidentifiable at the species level)
@@ -221,7 +214,9 @@ from dw_2014 should we remove rows that are recorded with 'no tag' for the stemt
 # get rid of things wihtout a stemtag 
 dw2014 <- subset(dw2014, STEMTAG != "no tag")
 dw2017 <- subset(dw2017, STEMTAG != "NA")
+```
 
+```{r piecetag}
 # merge stemtag and piece for new identifier -> PIECETAG
 # the reason for PIECETAG is to keep the association between tree tag (the number) and then the fragment (indicated by A, B, etc.) -> turn this into a single identifier that we can keep using throughout to have a more fine-tuned view of decay at the fragment level
 
@@ -270,7 +265,6 @@ dw2017$DC.2017 <- as.factor(dw2017$DC.2017)
 dw2017$DC.2021 <- as.factor(dw2017$DC.2021)
 dw2017$PIECETAG <- as.factor(dw2017$PIECETAG)
 
-
 str(dead_2019)
 dead_2019$QUADNAME <- as.factor(dead_2019$QUADNAME)
 dead_2019$TAG <- as.factor(dead_2019$TAG)
@@ -291,14 +285,9 @@ prep data to merge - need to make sure that all of the columns that need to be '
  [1] "QUADNAME"     "STEMTAG"      "BDS.2021"     "PIECE.2021"   "INTEG.2021"   "DC.2021"     
  [7] "GC.2021"      "TOPDIAM.2021" "DBH.2021"     "LENGTH.2021" 
 
-##### MERGE but with help - July 22 @ SERC
+##### MERGE - July 22 @ SERC. working with sean's help
 
-abbey: TASKS
-  * pick key columns 
-  * pick columns that we want disambiguigated 
-  * look into cache = TRUE - this is a thing that skips over time-consuming chunks that have byproducts already existing in the R environment
-  
-```{r prep merge with sean's help}
+```{r prep merge}
 # full_join method - bringing together by PIECETAG 2 at a time 
 # make a vector with 'base ID data' 
 dw_total <- full_join(dw2014, dw2017, by = c("PIECETAG", "STEMTAG", "QUADNAME")) # list key things here in the c() 
@@ -324,10 +313,9 @@ table(col.test)
 
 # this says that there are 806 samples with 0 entries for any version of BDS.2021, there are 761 samples that have one entry across the 4 versions of BDS.2021, and there are 2 samples that have 2 entries across the 4 versions of BDS.2021. what we need to do in the QUALITY CHECK is to make sure that for these 2 samples with 2 entries, there is agreement between them
 
-head(dw_total[,q.col], 100)
-# check and make sure that if there are more than 2 entries, they agree with one another in content 
-
+# identify the problems 
 dw_total[which(col.test == 2),q.col]
+
 # this confirms the above question: are the duplicated entries the same across versions of the BDS.2021 variable?
 
 # GOOD: BDS.2021, INTEG.2021, DC.2021, GC.2021, TOPDIAM.2021, DBH.2021, LENGTH.2021, SPCODE, HEIGHT.2021
@@ -364,6 +352,7 @@ s.index <- paste(dw_total$SPCODE.y, dw_total$SPCODE.x, sep = "")
 table(s.index)
 
 # problem children are: FRPEFRAM2 (green ash/white ask) and there are only 3 of them so this could be a spot fix perhaps 
+# NOVEMBER 4 - this is no longer an issue?? 
 
 dw_total[which(s.index == "FRPEFRAM2"),]
 # TO DO - send jess these two tags and ask her whats up and which sp we should go with  
@@ -375,19 +364,17 @@ dw_total[which(s.index == "FRPEFRAM2"),]
 
 # STEP 1 
 # write out functions: 'expand.dataframe' and 'consolidate'
+# see top of doc 
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
-important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME", "QX.x", "QY.x", "NOTES.2021")
+important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME", "QX.x", "QY.x")
 new.df <- dw_total[, important.cols]
 
 # STEP 3
 # select variables to correct and bind to new dataframe
 name.list <- c("BDS", "DC", "TOPDIAM", "DBH", "LENGTH", "HEIGHT")
 # the code breaks when GC and INTEG are included - therefore take out 
-
-# STEP 4 
-# first load functions (see below)
 
 # for the SPCODE issue 
 new.df <- expand.dataframe_SP(new.df, dw_total, "SPCODE")
@@ -403,179 +390,9 @@ head(dw_total)
 # even after adding SPCODE to 2014, the probelm still persists. I think it is because the variable name 'SPCODE' does not actually include any .2021 tag, and this is what the function is looking for 
 ```
 
-#### 7. FULL STUDY PLAN ----
-this is the next step for thinking about sampling. what do we want to measure, how should we choose pieces? 
-
-goals for sampling: 
-  * gas flux (LGR chamber measurements)
-  * microbes (sawdust, CTAB, then sequencing)
-  * also potentially some kind of moisture content (?)
-  
-considerations for sampling: 
-  * in my grant proposals, I wanted to key into 1-2 species and then sample across all 5 decay classes 
-  * search time could be a little intense - to sample, id be going out into forestGEO with quads and coordinates, but it would still be a search process
-  * right now, sawing out little cubes seems to be the best bet for subsampling logs. still up for debate is multiple samples along the length of the log to better spatially represent decay, if a single cube could be sufficient for flux, moisture content, and also what best methods can be used in drilling for microbes 
-  
-what we are looking for in the dataframe:
-  * samples that have DC for all 3 'timepoints' (?) (2014, 2017, 2021) -> 'complete cases'
-    * alternatively, is it ok if there are measures for JUST 2014 and 2021, or JUST 2017 and 2021 -> 'partial cases'
-  * we also should take a look at how many complete cases exist for the target species that we named (oak, QUERC and tulip poplar, LITU) 
-
-#### 8. CHOOSING PILOT DATA ----
-```{r choose pilot data}
-# from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
-dw_select <- new.df %>%
-  select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
-# what kind of species are there?
-unique(dw_select$SPCODE)
-
-# what is the distribution of species counts? 
-dw_select %>% 
-        drop_na(SPCODE) %>%
-        ggplot(aes(x = SPCODE))+
-        geom_bar(stat="count")+
-        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-# this figure shows species and frequency of dw pieces 
-
-# potential candidates:
-  # tulip poplar (LITU) 
-  # oaks (QUFA, QUERC, QUAL)
-  # red maple (ACRU)
-  # american beech (FAGR)
-  # sweetgum (LIST2)
-
-# NOTE that FRPE has high hits, but this is probably because of the ash dieback that is pretty widespread in the marsh region of the plot 
-ash <- subset(dw_select, SPCODE == "FRPE")
-# there are mainly 1s and 2s, some 3s, a handful of 4s, and like a single 5s im pretty sure
-
-ashplot <- ggplot(data = ash, aes(x = DC.2021)) + 
-    geom_bar(position="stack", stat="count")
-
-# BUILD PILOT DATA (Aug 2021)
-
-# SPECIES 1: LITU
-# what is decay class distribution (2021) for all LITUs 
-dw_LITU <- dplyr::filter(dw_select, SPCODE %in% c("LITU"))
-
-# distribution of decay classes 
-ggplot(dw_LITU, aes(x=DC.2021)) + geom_histogram()
-
-# SPECIES 2: LIST2
-# what is decay class distribution (2021) for all QURU 
-dw_LIST2 <- dplyr::filter(dw_select, SPCODE %in% c("LIST2"))
-
-# distribution of decay classes 
-ggplot(dw_LIST2, aes(x=DC.2021)) + geom_histogram()
-
-# PILOT DATA GOAL: sample at least 3 replicates from DC 1, 3, 5
-# for pilot data sampling - pull from LITU and LIST2
-
-pilot <- rbind(dw_LITU, dw_LIST2)
-# remove rows that have NA for DC.2021 - not helpful 
-pilot <- pilot[complete.cases(pilot[ , 9]),]
-
-#export .csv
-write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot.csv", row.names = FALSE)
-
-```
-
-#### 9. INITIAL PLOTS FOR DW DISTRIBUTION ----
-
-Plot 1: decay class distribution by breakdown status
+#### 7. EXPORT new.df to FINAL_DATA ----
 ```{r}
-data <- new.df
-# fix the breakdown status for 2014 - change it from the werid language to just log and snag 
-data <- data %>%
-  mutate(BDS.2014_new = case_when(
-    BDS.2014 == "lying broken" ~ "log", 
-    BDS.2014 == "standing dead" ~ "snag",
-    BDS.2014 == "standing broken" ~ "snag",
-    BDS.2014 == "lying whole" ~ "log", 
-    BDS.2014 == "lying cut" ~ "log",
-    BDS.2014 == "standing cut" ~ "snag"
-    ))
-# fix the breakdown status for 2021 (one 'snag' has an extra space behind it)
-data <- data %>%
-  mutate(BDS.2021_new = case_when(
-    BDS.2021 == "Snag " ~ "Snag", 
-    BDS.2021 == "Snag" ~ "Snag",
-    BDS.2021 == "Log" ~ "Log"
-    ))
-    
-# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
-
-dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("log","snag"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
-  geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("Log", "Snag"),
-                    values = c("darkgreen", "orange", "red", "blue"))
-
-ggarrange(dc2014, dc2017, dc2021, nrow = 1)
-
-# create plots by year that show species distribution 
-
-sp2014 <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) + 
-  geom_bar(position="stack", stat="count")+
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+# call this data 'cleaned_survey_14-21'
+write.csv(new.df, "/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/cleaned_survey_14-21.csv")
 ```
-
-#### 10. TRANSITION MATRIX BRAINSTORM ----
-
-what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
-```{r}
-# convert 2017 and 2021 data to 3 tiered decay class scale (I think this is the way that Jess broke it down in the past)
-# 1 = 1
-# 2 = 2,3
-# 3 = 4,5
-
-# convert 2017 and 2021 decay class data to the 3 tiered scale based on the above criteria: 
-# in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
-
-new.df <- new.df %>%
-  mutate(DC.2017_3 = case_when(
-    DC.2017 == "1" ~ "1", 
-    DC.2017 == "2" ~ "2",
-    DC.2017 == "3" ~ "2",
-    DC.2017 == "4" ~ "3", 
-    DC.2017 == "5" ~ "3",
-    ))
-select(new.df, DC.2017, DC.2017_3)
-
-new.df <- new.df %>%
-  mutate(DC.2021_3 = case_when(
-    DC.2021 == "1" ~ "1", 
-    DC.2021 == "2" ~ "2",
-    DC.2021 == "3" ~ "2",
-    DC.2021 == "4" ~ "3", 
-    DC.2021 == "5" ~ "3",
-    ))
-select(new.df, PIECETAG, DC.2021, DC.2021_3)
-
-tm_data <- select (new.df, PIECETAG, DC.2014, DC.2017_3, DC.2021_3)
-
-```
-
-```{r}
-# make a class 6 for 2017 'consumed' (in BDS) and 2021 'not found' (in notes) - in excel
-
-# new.df <- data.frame(DC.2017 = c(1, 2, 1, 5, 4, 3, 2), DC.2021 = c(2, 2, 3, 6, 6, 5, 2))
-decay.mat <- matrix(0, nrow = 6, ncol = 6)
-
-for(i in 1:nrow(new.df)) {
-	decay.mat[new.df$DC.2021[i], new.df$DC.2017[i]] <- decay.mat[new.df$DC.2021[i], new.df $DC.2017[i]] + 1
-}
-# percent of going from column to row (2017 is column, 2021 is row)
-decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
-
-```
-
 
