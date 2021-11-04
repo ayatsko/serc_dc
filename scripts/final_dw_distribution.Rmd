@@ -520,6 +520,12 @@ dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2
                     values = c("darkgreen", "orange", "red", "blue"))
 
 ggarrange(dc2014, dc2017, dc2021, nrow = 1)
+
+# create plots by year that show species distribution 
+
+sp2014 <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) + 
+  geom_bar(position="stack", stat="count")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
 #### 10. TRANSITION MATRIX BRAINSTORM ----
