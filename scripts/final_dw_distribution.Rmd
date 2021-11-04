@@ -378,7 +378,7 @@ dw_total[which(s.index == "FRPEFRAM2"),]
 
 # STEP 2
 # create new dataframe with 'core columns' (non-problematic base data)
-important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME", "QX.x", "QY.x")
+important.cols <- c("PIECETAG", "STEMTAG", "QUADNAME", "QX.x", "QY.x", "NOTES.2021")
 new.df <- dw_total[, important.cols]
 
 # STEP 3
@@ -563,4 +563,19 @@ select(new.df, PIECETAG, DC.2021, DC.2021_3)
 tm_data <- select (new.df, PIECETAG, DC.2014, DC.2017_3, DC.2021_3)
 
 ```
+
+```{r}
+# make a class 6 for 2017 'consumed' (in BDS) and 2021 'not found' (in notes) - in excel
+
+# new.df <- data.frame(DC.2017 = c(1, 2, 1, 5, 4, 3, 2), DC.2021 = c(2, 2, 3, 6, 6, 5, 2))
+decay.mat <- matrix(0, nrow = 6, ncol = 6)
+
+for(i in 1:nrow(new.df)) {
+	decay.mat[new.df$DC.2021[i], new.df$DC.2017[i]] <- decay.mat[new.df$DC.2021[i], new.df $DC.2017[i]] + 1
+}
+# percent of going from column to row (2017 is column, 2021 is row)
+decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+
+```
+
 
