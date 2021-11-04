@@ -123,3 +123,8 @@ decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob
 ```
 
+next steps: 
+* how do you include the time element 
+* ways to estimate the carbon pool though time with this? 
+* how to combine this with the deadwood decay class transitions that are above? 
+* how is this incorporated into a model that has iterations though time taking into the account of the transition probabilities that we found here 
