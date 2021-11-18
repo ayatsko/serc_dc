@@ -114,8 +114,8 @@ main question: what are the probabilities of transition between the different st
 decay.mat <- matrix(0, nrow = 6, ncol = 6)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
-for(i in 1:nrow(new.df)) {
-	decay.mat[new.df$DC.2021[i], new.df$DC.2017[i]] <- decay.mat[new.df$DC.2021[i], new.df $DC.2017[i]] + 1
+for(i in 1:nrow(data)) {
+	decay.mat[data$DC.2021[i], data$DC.2017[i]] <- decay.mat[data$DC.2021[i], data$DC.2017[i]] + 1
 }
 
 # percent probability of going from a particular decay state in 2017 to the next state in 2021 
