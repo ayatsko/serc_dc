@@ -133,27 +133,75 @@ A <- matrix(0, 3, 3)
 
 # populate matrix with different 'decay transition probabilities'
 A[1, 1] <- 0.3
-A[2, 1] <- 0.2
-A[3, 1] <- 0.05
+A[1, 2] <- 0.5
+A[1, 3] <- 0.1
+A[2, 1] <- 0.05
 A[2, 2] <- 0.5
-A[3, 2] <- 0.4
-A[3, 3] <- 0.6
+A[2, 3] <- 0.6
+A[3, 1] <- 0.01
+A[3, 2] <- 0.15
+A[3, 3] <- 0.4
 
 # see what the matrix looks like 
 A
 
 # pick a timeframe for the simulation to run over - here it is 50 years 
-yrs <- 50
+yrs <- 25
 
+# create a matrix (N_tot) for running the simulation, where the columns are each year of 
+# the simulation and the rows are the proportion of pieces in each decay class, by year
 N_tot <- matrix(0, ncol = yrs, nrow = 3)
+
+# in the first year, put in 30 pieces of decay class 1 wood into the system 
 N_tot[, 1] <- matrix(c(30, 0, 0), ncol = 1)
 
+# start the simulation in the second year. use the inputs from the first year 
+# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
 for(i in 2:yrs) {
 	N_tot[, i] <- N_tot[, i - 1] %*% A
 }
+
+# look at the transition matrix simulated out to X years 
+N_tot 
+
+# display time series matrix simulation (N_tot) as a time series plot
 ts.plot(t(N_tot), col = c(1, 2, 3))
 
-rnorm(1, mean, SD)
+# color legend: 
+# DC1 = black
+# DC2 = red 
+# DC3 = green
 
-
+# play around with different values to see consequences of different decay class pool strengths 
 ```
+
+next use a calculated matrix from the 2017-2021 decay class transition data:
+```{r}
+# matrix is held in 'decay prob' (note that 6 = fully left the system)
+decay.prob
+
+# timeframe and empty simulation matrix
+yrs <- 5
+N <- matrix(0, ncol = yrs, nrow = 6)
+
+# insert different starting conditions
+N[, 1] <- matrix(c(300, 100, 0, 0, 0, 0), ncol = 1)
+ N[, 1] <- matrix(c(300, 500, 550, 400, 200, 0), ncol = 1)
+
+# start the simulation in the second year. use the inputs from the first year 
+# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
+for(i in 2:yrs) {
+	N[, i] <- N[, i - 1] %*% decay.prob
+}
+
+# look at the transition matrix simulated out to X years
+N 
+
+# display time series matrix simulation (N_tot) as a time series plot
+ts.plot(t(N), col = c(1, 2, 3, 4, 5, 6))
+```
+
+
+
+
+
