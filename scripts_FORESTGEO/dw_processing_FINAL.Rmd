@@ -75,7 +75,7 @@ expand.dataframe_SP <-  function(new.df, df, NAME = "SPCODE"){
 all_na <- function(x) any(!is.na(x))
 
 # set working directory 
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO")
 
 # read in data - initially coming from 4 field sheets 
 dw2014 <- read.csv("deadwood_2014.csv", na.strings=c("","NA"))
@@ -393,6 +393,6 @@ head(dw_total)
 #### 7. EXPORT new.df to FINAL_DATA ----
 ```{r}
 # call this data 'cleaned_survey_14-21'
-write.csv(new.df, "/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/cleaned_survey_14-21.csv")
+write.csv(new.df, "/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
 ```
 

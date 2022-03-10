@@ -8,7 +8,7 @@ output: html_document
 read in data and set workspace 
 ```{r}
 # call this data 'cleaned_survey_14-21'
-data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/cleaned_survey_14-21.csv")
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
 ```
 
 #### 1. INITIAL PLOTS FOR DW DISTRIBUTION ----
@@ -108,6 +108,7 @@ this is code for how collapsing the 2017 and 2021 data could work (skip for now)
 
 main question: what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
 
+this section is just for transitioning from 2017 - 2021
 ```{r}
 # create an empty 6x6 matrix
 # 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
@@ -123,8 +124,36 @@ decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob
 ```
 
-next steps: 
-* how do you include the time element 
-* ways to estimate the carbon pool though time with this? 
-* how to combine this with the deadwood decay class transitions that are above? 
-* how is this incorporated into a model that has iterations though time taking into the account of the transition probabilities that we found here 
+#### 3. DECAY CLASS TRANSITION PROBABILITIES ----
+
+first start with a simulated matrix example: 
+```{r}
+# set up an empty matrix
+A <- matrix(0, 3, 3)
+
+# populate matrix with different 'decay transition probabilities'
+A[1, 1] <- 0.3
+A[2, 1] <- 0.2
+A[3, 1] <- 0.05
+A[2, 2] <- 0.5
+A[3, 2] <- 0.4
+A[3, 3] <- 0.6
+
+# see what the matrix looks like 
+A
+
+# pick a timeframe for the simulation to run over - here it is 50 years 
+yrs <- 50
+
+N_tot <- matrix(0, ncol = yrs, nrow = 3)
+N_tot[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+for(i in 2:yrs) {
+	N_tot[, i] <- N_tot[, i - 1] %*% A
+}
+ts.plot(t(N_tot), col = c(1, 2, 3))
+
+rnorm(1, mean, SD)
+
+
+```
