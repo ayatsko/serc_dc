@@ -35,9 +35,11 @@ data <- data %>%
     BDS.2021 == "Snag" ~ "Snag",
     BDS.2021 == "Log" ~ "Log"
     ))
-    
-# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
+```
 
+create plots by year that show decay class and then the proportion of log / snag things that make up the count
+
+```{r}
 dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
   geom_bar(position="stack", stat="count")+
   scale_fill_manual( breaks = c("log","snag"),
@@ -60,8 +62,11 @@ ggarrange(dc2014, dc2017, dc2021, nrow = 1)
 # > 2021: when there was a NOTES.2021 == "not found" or some corresponding variety 
 # ultimtaely DC = 6 means that the piece has moved out of the system 
 
-# create plos that shows species distribution 
+```
 
+create plos that shows species distribution 
+
+```{r}
 speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) + 
   geom_bar(position="stack", stat="count")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
@@ -163,7 +168,6 @@ ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) 
 
 ```
 
-
 #### 4. DECAY CLASS TRANSITION PROBABILITIES ----
 
 first start with a simulated matrix example: 
@@ -241,6 +245,7 @@ N
 # display time series matrix simulation (N_tot) as a time series plot
 ts.plot(t(N), col = c(1, 2, 3, 4, 5, 6))
 ```
+
 
 turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
 ```{r}
