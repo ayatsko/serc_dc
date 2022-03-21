@@ -9,6 +9,9 @@ read in data and set workspace
 ```{r}
 # call this data 'cleaned_survey_14-21'
 data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
 ```
 
 #### 1. INITIAL PLOTS FOR DW DISTRIBUTION ----
@@ -64,7 +67,27 @@ speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
 ```
 
-#### 2. GETTING SURVEYS TO TALK ----
+#### 2. DECAY CLASS TRANSITION PROBABILITIES ----
+
+main question: what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
+
+this section is just for transitioning from 2017 - 2021
+```{r}
+# create an empty 6x6 matrix
+# 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
+decay.mat <- matrix(0, nrow = 6, ncol = 6)
+
+# instructions for how to fill in the matrix: 2017 is column, 2021 is row
+for(i in 1:nrow(data)) {
+	decay.mat[data$DC.2021[i], data$DC.2017[i]] <- decay.mat[data$DC.2021[i], data$DC.2017[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob
+```
+
+#### 3. GETTING SURVEYS TO TALK ----
 
 two problems: 
 > 2014 is in three-tiers, while 2017/2021 is in 5 
@@ -72,11 +95,47 @@ two problems:
 
 this is code for how collapsing the 2017 and 2021 data could work (skip for now)
 ```{r}
+# QUESTION: how to break up 1 into 1's and 2's as well as 2 into 3's and 4's? 
+# when building transition matrix, need DC to be equivalent across the three surveys 
+# currently, it is not like that! 
+
+# this is the code for going the other direction: now we are splitting up all decay classes into 3 tier 
 # convert 2017 and 2021 decay class data to the 3 tiered scale based on the above criteria: 
 
-  # 1 = 1
-  # 2 = 2,3
-  # 3 = 4,5
+  # 1 = 1,2
+  # 2 = 3,4
+  # 3 = 5
+
+# in 'data' - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
+# not changing DC.2014 because it is already in terms of 3 tier decay class 
+
+# for 2017 survey
+data$DC.2017_3 <- ifelse((data$DC.2017 == "1") | (data$DC.2017 == "2"), "1",
+                       ifelse((data$DC.2017 == "3") | (data$DC.2017 == "4"), "2",
+                              ifelse((data$DC.2017 == "5"), "3", NA)))
+
+unique(data$DC.2017_3)
+
+# plot this 
+ggplot(data = subset(data, !is.na(DC.2017_3)), aes(x=DC.2017_3, fill=BDS.2017)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+# for 2021 survey
+data$DC.2021_3 <- ifelse((data$DC.2021 == "1") | (data$DC.2021 == "2"), "1",
+                       ifelse((data$DC.2021 == "3") | (data$DC.2021 == "4"), "2",
+                              ifelse((data$DC.2021 == "5"), "3", NA)))
+
+unique(data$DC.2021_3)
+
+data[c("DC.2021", "DC.2021_3")]
+
+# plot this 
+ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue", "black", "brown")) # weird error with number of things on the scale - added black and brown but it doesnt actually change the fig... 
 
 # in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
 # 
@@ -104,27 +163,8 @@ this is code for how collapsing the 2017 and 2021 data could work (skip for now)
 
 ```
 
-#### 3. DECAY CLASS TRANSITION PROBABILITIES ----
 
-main question: what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
-
-this section is just for transitioning from 2017 - 2021
-```{r}
-# create an empty 6x6 matrix
-# 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
-decay.mat <- matrix(0, nrow = 6, ncol = 6)
-
-# instructions for how to fill in the matrix: 2017 is column, 2021 is row
-for(i in 1:nrow(data)) {
-	decay.mat[data$DC.2021[i], data$DC.2017[i]] <- decay.mat[data$DC.2021[i], data$DC.2017[i]] + 1
-}
-
-# percent probability of going from a particular decay state in 2017 to the next state in 2021 
-decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
-decay.prob
-```
-
-#### 3. DECAY CLASS TRANSITION PROBABILITIES ----
+#### 4. DECAY CLASS TRANSITION PROBABILITIES ----
 
 first start with a simulated matrix example: 
 ```{r}
@@ -176,6 +216,7 @@ ts.plot(t(N_tot), col = c(1, 2, 3))
 ```
 
 next use a calculated matrix from the 2017-2021 decay class transition data:
+NOTE this is transitioning *5 TIER* decay classes 
 ```{r}
 # matrix is held in 'decay prob' (note that 6 = fully left the system)
 decay.prob
