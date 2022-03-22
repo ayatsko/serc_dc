@@ -214,11 +214,10 @@ decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob
 ```
 
-#WORKING HERE 
 this section is just for transitioning from 2017 - 2021, but using 3 TIERS
 ```{r}
-# create an empty 3x3 matrix
-decay.mat <- matrix(0, nrow = 3, ncol = 3)
+# create an empty 4x4 matrix
+decay.mat <- matrix(0, nrow = 4, ncol = 4)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
 for(i in 1:nrow(data)) {
@@ -232,8 +231,8 @@ decay.prob2
 
 this section is just for transitioning from 2014 - 2017, but using 3 TIERS
 ```{r}
-# create an empty 3x3 matrix
-decay.mat <- matrix(0, nrow = 3, ncol = 3)
+# create an empty 4x4 matrix
+decay.mat <- matrix(0, nrow = 4, ncol = 4)
 
 # instructions for how to fill in the matrix: 2014 is column, 2017 is row
 for(i in 1:nrow(data)) {
@@ -243,6 +242,10 @@ for(i in 1:nrow(data)) {
 # percent probability of going from a particular decay state in 2014 to the next state in 2017 
 decay.prob3 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob3
+
+# problem with the 4x4 matrix here - there is no 'consumed' class in 2014 data
+# look back at notes to see if there was any info for this class on being consumed 
+# first year of DW survey, things might not be consumed / unfound because it was the first survey? ?
 ```
 
 #### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
