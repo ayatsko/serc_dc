@@ -246,8 +246,13 @@ decay.prob2
 
 this section is just for transitioning from 2014 - 2017, but using 3 TIERS
 ```{r}
-# create an empty 4x4 matrix
-decay.mat <- matrix(0, nrow = 4, ncol = 4)
+# create an empty 3x4 matrix
+# problem with the 4x4 matrix here - there is no 'consumed' class in 2014 data
+# look back at notes to see if there was any info for this class on being consumed 
+# first year of DW survey, things might not be consumed / unfound because it was the first survey? ?
+# might want to go back through and see where 2014 = 3 and 2017 / 2021 are NA (does this mean that they are not found?)
+
+decay.mat <- matrix(0, nrow = 4, ncol = 3)
 
 # instructions for how to fill in the matrix: 2014 is column, 2017 is row
 for(i in 1:nrow(data)) {
@@ -258,10 +263,6 @@ for(i in 1:nrow(data)) {
 decay.prob3 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob3
 
-# problem with the 4x4 matrix here - there is no 'consumed' class in 2014 data
-# look back at notes to see if there was any info for this class on being consumed 
-# first year of DW survey, things might not be consumed / unfound because it was the first survey? ?
-# might want to go back through and see where 2014 = 3 and 2017 / 2021 are NA (does this mean that they are not found?)
 ```
 
 #### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
@@ -350,11 +351,11 @@ decay.prob2
 
 # timeframe and empty simulation matrix
 yrs <- 50
-N <- matrix(0, ncol = yrs, nrow = 3)
+N <- matrix(0, ncol = yrs, nrow = 4)
 
 # insert different starting conditions
 # just influx of a bunch of 1s and 2s
-N[, 1] <- matrix(c(300, 100, 0), ncol = 1)
+N[, 1] <- matrix(c(300, 100, 0, 0), ncol = 1)
 
 # influx for a bunch of different classes across the decay process
 N[, 1] <- matrix(c(300, 500, 300), ncol = 1)
@@ -372,7 +373,6 @@ N
 ts.plot(t(N), col = c("red", "green", "blue", "pink", "purple", "black"))
 
 ```
-
 
 turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
 ```{r}
@@ -402,6 +402,9 @@ N_tot
 
 # display time series matrix simulation (N_tot) as a time series plot
 ts.plot(t(N_tot), col = c("black", "red", "green"))
+
+################################################################################
+# UNFINISHED 
 
 # NEXT TRY
 # two loops where the first now feeds into the second (old loop)
