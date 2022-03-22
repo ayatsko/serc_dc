@@ -107,16 +107,22 @@ this is code for how collapsing the 2017 and 2021 data could work (everythign wo
   # 2 = 3,4
   # 3 = 5
 
+# above we also created a DC 6 for those pieces that 'moved out of the system' aka were not able to be found or were listed as consumed. 
+# add in a 4th decay class which translates to this 'consumed' phase 
+
+  # 4 = 6 (consumed / left the system)
+
 # in 'data' - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
 # not changing DC.2014 because it is already in terms of 3 tier decay class 
 
 # for 2017 survey
 data$DC.2017_3 <- ifelse((data$DC.2017 == "1") | (data$DC.2017 == "2"), "1",
                        ifelse((data$DC.2017 == "3") | (data$DC.2017 == "4"), "2",
-                              ifelse((data$DC.2017 == "5"), "3", NA)))
+                              ifelse((data$DC.2017 == "6"), "4", # here is where the 'left system' decay class is added 
+                              ifelse((data$DC.2017 == "5"), "3", NA))))
 
 unique(data$DC.2017_3)
-str(data)
+str(data$DC.2017_3)
 data$DC.2017_3 <- as.integer(data$DC.2017_3)
 
 # plot this 
@@ -125,6 +131,7 @@ ggplot(data = subset(data, !is.na(DC.2017_3)), aes(x=DC.2017_3, fill=BDS.2017)) 
   scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
                     values = c("darkgreen", "orange", "red", "blue"))
 
+# most of decay class 4 is consumed for BDS - this makes sense because it is what the class represents 
 # there are many 1's and 2's, hardly any 3's 
 # this makes sense if you run counts for the initial DC.2017 dataset number of 5's: 
 # > sum(data$DC.2017 == "5", na.rm = TRUE)
@@ -137,7 +144,8 @@ ggplot(data = subset(data, !is.na(DC.2017_3)), aes(x=DC.2017_3, fill=BDS.2017)) 
 # for 2021 survey
 data$DC.2021_3 <- ifelse((data$DC.2021 == "1") | (data$DC.2021 == "2"), "1",
                        ifelse((data$DC.2021 == "3") | (data$DC.2021 == "4"), "2",
-                              ifelse((data$DC.2021 == "5"), "3", NA)))
+                            ifelse((data$DC.2021 == "6"), "4", # here is where the 'left system' decay class is added 
+                              ifelse((data$DC.2021 == "5"), "3", NA))))
 
 unique(data$DC.2021_3)
 data$DC.2021_3 <- as.integer(data$DC.2021_3)
@@ -152,6 +160,10 @@ ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) 
 
 # in this survey there are many more DC 3's. almost 10x as many
 # i guess this indicates that 2017 survey was biased to a less decayed pool, but by 2021 some of those pieces have shifted? 
+
+# there are also a fair number of pieces that have left the system (indicated by 4's) 
+
+############################################################################################################
 
 # FOR THE NOTES: ALTERNATE WAY of converting decay class - skip for now
 # in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
@@ -180,7 +192,7 @@ ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) 
 
 ```
 
-now everything is in decay class scale 1-3! 
+now everything is in decay class scale 1-3! time to move on and compare 
 
 #### 3. DECAY CLASS PROBABILITY MATRIX FROM DATA ----
 
