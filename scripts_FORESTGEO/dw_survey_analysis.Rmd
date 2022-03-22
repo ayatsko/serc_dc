@@ -12,6 +12,7 @@ data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
+library(tidyverse)
 ```
 
 #### 1. INITIAL PLOTS FOR DW DISTRIBUTION ----
@@ -192,7 +193,21 @@ ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) 
 
 ```
 
-now everything is in decay class scale 1-3! time to move on and compare 
+now everything is in decay class scale 1-3! time to move on and compare
+
+the next question is, what pieces can be tracked through time completely? this means that they were recorded in all 3 surveys 
+samples that are noted 3 times give us the most complete record of the deadwood decomposition process 
+```{r}
+# dataframe of complete survey data for DW sample across all 3 survey periods 
+a <- data %>% filter(!is.na(DC.2014), !is.na(DC.2017_3), !is.na(DC.2021_3))
+
+# 2014 samples that are a 3 and then are not found in 2017 or in 2021
+b <-  data %>% filter(!is.na(DC.2014), is.na(DC.2017_3), is.na(DC.2021_3))
+
+# the question here is, do we assume that these pieces have moved 'out of the system'? 
+# there is a mix of 1-3, maybe for 3's the assumption is that they moved out?
+
+```
 
 #### 3. DECAY CLASS PROBABILITY MATRIX FROM DATA ----
 
@@ -246,6 +261,7 @@ decay.prob3
 # problem with the 4x4 matrix here - there is no 'consumed' class in 2014 data
 # look back at notes to see if there was any info for this class on being consumed 
 # first year of DW survey, things might not be consumed / unfound because it was the first survey? ?
+# might want to go back through and see where 2014 = 3 and 2017 / 2021 are NA (does this mean that they are not found?)
 ```
 
 #### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
