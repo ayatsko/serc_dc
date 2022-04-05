@@ -82,7 +82,9 @@ Plot 2: species distribution of deadwood in forestgeo plot
 create plot that shows species distribution, which species are most common 
 
 ```{r}
-speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE, fill=BDS.2021_new)) + # include display of BDS for most recent survey
+speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE, fill=BDS.2021_new)) + 
+  # include display of BDS for most recent survey (fill as breakdown status)
+  theme_classic() +
   geom_bar(position="stack", stat="count")+
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))+
   scale_y_continuous(expand = c(0, 0), limits = c(0, 300)) 
@@ -403,7 +405,12 @@ N_tot
 # display time series matrix simulation (N_tot) as a time series plot
 ts.plot(t(N_tot), col = c("black", "red", "green"))
 
+# use "plot" and "lines" 
+# cycle through and plot every line - creates distribution 
+# add = true for ts.plot (check)
+
 ################################################################################
+
 # UNFINISHED 
 
 # NEXT TRY
