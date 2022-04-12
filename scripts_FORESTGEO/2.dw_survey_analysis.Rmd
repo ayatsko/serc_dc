@@ -53,7 +53,6 @@ Plot 1: decay class distribution by breakdown status:
 create plots by survey year that show decay class and then the proportion of log / snag things that make up the count
 
 ```{r}
-# not plotting the decay class 6's (moved out of system)
 
 dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
   geom_bar(position="stack", stat="count")+
@@ -71,13 +70,6 @@ dc2021 <- ggplot(data = subset(data[which(data$DC.2021 < 6),], !is.na(DC.2021)),
                     values = c("darkgreen", "orange", "red"))
 
 ggarrange(dc2014, dc2017, dc2021, nrow = 1)
-
-# NOVERMBER 4 - note that there are now 6 decay classes for 2017 and 2021 surveys. this is because i went back in to the excel files to make the following changes:
-# > 2017: when there was a BDS.2017 == "consumed" 
-# > 2021: when there was a NOTES.2021 == "not found" or some corresponding variety 
-# ultimtaely DC = 6 means that the piece has moved out of the system 
-
-# taking out 6's from bar plots for now (showing species distribution), but still in the data set 
 
 ```
 
@@ -124,7 +116,7 @@ this is code for how collapsing the 2017 and 2021 data could work (everythign wo
 # for 2017 survey
 data$DC.2017_3 <- ifelse((data$DC.2017 == "1") | (data$DC.2017 == "2"), "1",
                        ifelse((data$DC.2017 == "3") | (data$DC.2017 == "4"), "2",
-                              ifelse((data$DC.2017 == "6"), "4", # here is where the 'left system' decay class is added 
+                              ifelse((data$DC.2017 == "6"), NA, # here is where the 'left system' decay class is added 
                               ifelse((data$DC.2017 == "5"), "3", NA))))
 
 unique(data$DC.2017_3)
@@ -150,7 +142,7 @@ ggplot(data = subset(data, !is.na(DC.2017_3)), aes(x=DC.2017_3, fill=BDS.2017)) 
 # for 2021 survey
 data$DC.2021_3 <- ifelse((data$DC.2021 == "1") | (data$DC.2021 == "2"), "1",
                        ifelse((data$DC.2021 == "3") | (data$DC.2021 == "4"), "2",
-                            ifelse((data$DC.2021 == "6"), "4", # here is where the 'left system' decay class is added 
+                            ifelse((data$DC.2021 == "6"), NA, # here is where the 'left system' decay class is added 
                               ifelse((data$DC.2021 == "5"), "3", NA))))
 
 unique(data$DC.2021_3)
@@ -220,9 +212,8 @@ main question: what are the probabilities of transition between the different st
 
 this section is just for transitioning from 2017 - 2021, but using 5 TIERS
 ```{r}
-# create an empty 6x6 matrix
-# 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
-decay.mat <- matrix(0, nrow = 6, ncol = 6)
+# create an empty 5x5 matrix
+decay.mat <- matrix(0, nrow = 5, ncol = 5)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
 for(i in 1:nrow(data)) {
@@ -236,8 +227,8 @@ decay.prob
 
 this section is just for transitioning from 2017 - 2021, but using 3 TIERS
 ```{r}
-# create an empty 4x4 matrix
-decay.mat <- matrix(0, nrow = 4, ncol = 4)
+# create an empty 3x3 matrix
+decay.mat <- matrix(0, nrow = 3, ncol = 3)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
 for(i in 1:nrow(data)) {
@@ -251,13 +242,9 @@ decay.prob2
 
 this section is just for transitioning from 2014 - 2017, but using 3 TIERS
 ```{r}
-# create an empty 3x4 matrix
-# problem with the 4x4 matrix here - there is no 'consumed' class in 2014 data
-# look back at notes to see if there was any info for this class on being consumed 
-# first year of DW survey, things might not be consumed / unfound because it was the first survey? ?
-# might want to go back through and see where 2014 = 3 and 2017 / 2021 are NA (does this mean that they are not found?)
+# create an empty 3x3 matrix
 
-decay.mat <- matrix(0, nrow = 4, ncol = 3)
+decay.mat <- matrix(0, nrow = 3, ncol = 3)
 
 # instructions for how to fill in the matrix: 2014 is column, 2017 is row
 for(i in 1:nrow(data)) {
