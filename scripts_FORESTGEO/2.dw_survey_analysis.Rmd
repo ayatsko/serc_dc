@@ -257,6 +257,24 @@ decay.prob3
 
 ```
 
+this section is just for transitioning from 2014 - 2021, but using 3 TIERS
+```{r}
+# create an empty 3x3 matrix
+
+decay.mat <- matrix(0, nrow = 3, ncol = 3)
+
+# instructions for how to fill in the matrix: 2014 is column, 2017 is row
+for(i in 1:nrow(data)) {
+	decay.mat[data$DC.2021_3[i], data$DC.2014[i]] <- decay.mat[data$DC.2021_3[i], data$DC.2014[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2014 to the next state in 2017 
+decay.prob4 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob4
+
+```
+interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales. 
+
 #### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
 
 first start with a simulated matrix example: 
