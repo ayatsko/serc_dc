@@ -273,9 +273,59 @@ decay.prob4 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
 decay.prob4
 
 ```
+
 interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales. 
 
-#### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
+#### 4. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
+since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
+
+* 2014-2017: 3 years 
+* 2017-2021: 4 years 
+* 2014-2021: 7 years
+
+the way to do this is (% in matrix)^(1/years passed)
+
+```{r}
+# write annualize function (for different year gap scenarios: 3,4,7)
+
+# for 3 years 
+annualize3 <- function(x) {
+  x_an <- x^(1/3)
+  return(x_an)
+}
+
+# for 4 years 
+annualize4 <- function(x) {
+  x_an <- x^(1/4)
+  return(x_an)
+}
+
+# for 7 years 
+annualize7 <- function(x) {
+  x_an <- x^(1/7)
+  return(x_an)
+}
+
+# LEFT OFF HERE 
+# 2017 - 2021 (5 tier)
+decay.prob
+decay.prob_an <- apply(decay.prob, 2, annualize3)
+
+# 2017 - 2021 (3 tier)
+decay.prob2
+decay.prob2_an <- apply(decay.prob2, 2, annualize3)
+
+# 2014 - 2017 (3 tier)
+decay.prob3
+decay.prob3_an <- apply(decay.prob3, 2, annualize4)
+
+# 2014 - 2021 (3 tier)
+decay.prob4
+
+
+```
+
+#### 5. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
 
 first start with a simulated matrix example: 
 ```{r}
