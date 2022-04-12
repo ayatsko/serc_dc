@@ -53,21 +53,22 @@ Plot 1: decay class distribution by breakdown status:
 create plots by survey year that show decay class and then the proportion of log / snag things that make up the count
 
 ```{r}
+# not plotting the decay class 6's (moved out of system)
+
 dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
   geom_bar(position="stack", stat="count")+
   scale_fill_manual( breaks = c("log","snag"),
                     values = c("darkgreen", "orange", "red", "blue"))
 
-dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
+dc2017 <- ggplot(data = subset(data[which(data$DC.2017 < 6),], !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
   geom_bar(position="stack", stat="count")+
   scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
                     values = c("darkgreen", "orange", "red", "blue"))
 
-dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
+dc2021 <- ggplot(data = subset(data[which(data$DC.2021 < 6),], !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
   geom_bar(position="stack", stat="count")+
-  scale_fill_manual( breaks = c("Log", "Snag"),
+  scale_fill_manual( breaks = c("log", "snag"),
                     values = c("darkgreen", "orange", "red"))
-# dc2021 plot isnt working... 
 
 ggarrange(dc2014, dc2017, dc2021, nrow = 1)
 
@@ -75,6 +76,8 @@ ggarrange(dc2014, dc2017, dc2021, nrow = 1)
 # > 2017: when there was a BDS.2017 == "consumed" 
 # > 2021: when there was a NOTES.2021 == "not found" or some corresponding variety 
 # ultimtaely DC = 6 means that the piece has moved out of the system 
+
+# taking out 6's from bar plots for now (showing species distribution), but still in the data set 
 
 ```
 
