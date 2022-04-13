@@ -285,6 +285,11 @@ since multiple years pass between each deadwood survey, the probabilities in the
 
 the way to do this is (% in matrix)^(1/years passed)
 
+or does it make sense to do proportions? 
+(0.5 change) / (3 years) = (? change) / (1 year)
+
+(? change) = (0.5 change) / (3 years)
+
 ```{r}
 # write annualize function (for different year gap scenarios: 3,4,7)
 
@@ -306,23 +311,21 @@ annualize7 <- function(x) {
   return(x_an)
 }
 
-# LEFT OFF HERE 
 # 2017 - 2021 (5 tier)
 decay.prob
-decay.prob_an <- apply(decay.prob, 2, annualize3)
+decay.prob_an <- apply(decay.prob, c(1, 2), annualize4)
 
 # 2017 - 2021 (3 tier)
 decay.prob2
-decay.prob2_an <- apply(decay.prob2, 2, annualize3)
+decay.prob2_an <- apply(decay.prob2, c(1, 2), annualize4)
 
 # 2014 - 2017 (3 tier)
 decay.prob3
-decay.prob3_an <- apply(decay.prob3, 2, annualize4)
+decay.prob3_an <- apply(decay.prob3, c(1, 2), annualize3)
 
 # 2014 - 2021 (3 tier)
 decay.prob4
-
-
+decay.prob4_an <- apply(decay.prob4, c(1, 2), annualize7)
 ```
 
 #### 5. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
@@ -379,24 +382,24 @@ ts.plot(t(N_tot), col = c(1, 2, 3))
 next use a calculated matrix from the 2017-2021 decay class transition data:
 NOTE this is transitioning *5 TIER* decay classes first, then *3 TIER* second
 ```{r}
-# matrix is held in 'decay prob' (note that 6 = fully left the system)
-decay.prob
+# matrix is held in 'decay prob', using annualized version (decay.prob_an)
+decay.prob_an
 
 # timeframe and empty simulation matrix
-yrs <- 5
-N <- matrix(0, ncol = yrs, nrow = 6)
+yrs <- 50
+N <- matrix(0, ncol = yrs, nrow = 5)
 
 # insert different starting conditions
 # just influx of a bunch of 1s and 2s
-N[, 1] <- matrix(c(300, 100, 0, 0, 0, 0), ncol = 1)
+N[, 1] <- matrix(c(300, 100, 0, 0, 0), ncol = 1)
 
 # influx for a bunch of different classes across the decay process
-N[, 1] <- matrix(c(300, 500, 550, 400, 200, 0), ncol = 1)
+#N[, 1] <- matrix(c(300, 500, 550, 400, 200, 0), ncol = 1)
 
 # start the simulation in the second year. use the inputs from the first year 
 # (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
 for(i in 2:yrs) {
-	N[, i] <- N[, i - 1] %*% decay.prob
+	N[, i] <- N[, i - 1] %*% decay.prob_an
 }
 
 # look at the transition matrix simulated out to X years
@@ -407,30 +410,78 @@ ts.plot(t(N), col = c("red", "green", "blue", "pink", "purple", "black"))
 
 
 # second matrix is when everything is converted to a 3 tier scale, here for 2017-2021
-decay.prob2
+decay.prob2_an
 
 # timeframe and empty simulation matrix
-yrs <- 50
-N <- matrix(0, ncol = yrs, nrow = 4)
+yrs <- 5
+N <- matrix(0, ncol = yrs, nrow = 3)
 
 # insert different starting conditions
 # just influx of a bunch of 1s and 2s
-N[, 1] <- matrix(c(300, 100, 0, 0), ncol = 1)
+N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
 
 # influx for a bunch of different classes across the decay process
-N[, 1] <- matrix(c(300, 500, 300), ncol = 1)
+#N[, 1] <- matrix(c(300, 500, 300), ncol = 1)
 
 # start the simulation in the second year. use the inputs from the first year 
 # (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
 for(i in 2:yrs) {
-	N[, i] <- N[, i - 1] %*% decay.prob2
+	N[, i] <- N[, i - 1] %*% decay.prob2_an
 }
 
 # look at the transition matrix simulated out to X years
 N 
 
 # display time series matrix simulation (N_tot) as a time series plot
-ts.plot(t(N), col = c("red", "green", "blue", "pink", "purple", "black"))
+ts.plot(t(N), col = c("red", "green", "blue"))
+
+```
+
+the above examples show how one pulse at the original time affects decay class pools throughout time. 
+
+next goal is to make simulations where repeated influxes are made at each time point
+
+```{r}
+# trying to add pulses of DC = 1 each year 
+N <- matrix(0, ncol = 1, nrow = 3)
+
+# start out with 20
+N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
+
+N
+t0 <- rowSums(N)
+decay.prob3
+
+# first year 
+N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
+
+# flip matrix for new input values. should only be a row of values (inputs)
+N <- t(N)
+
+# add 10 to [1,1] element of N
+N[1,1] <- N[1,1] + 10
+
+N <- t(N)
+N <- N[,-2:-3]
+
+N <- as.vector(N)
+t1 <- rowSums(N)
+# these values in the first column of N are the output numbers of each decay class. 
+# they need to be transposed to the first row as inputs for the second year
+
+# second year
+
+
+N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
+
+# sum across rows for new inputs 
+N <- (rowSums(N))
+as.vector(N)
+
+N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
+N <- (rowSums(N))
+N <- as.vector(N)
+N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
 
 ```
 
