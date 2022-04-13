@@ -274,9 +274,76 @@ decay.prob4
 
 ```
 
-interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales. 
+interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales.
 
-#### 4. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
+#### 4. BREAKDOWN STATUS PROBABILITY MATRIX FROM DATA ----
+
+
+```{r}
+# split data between snag and downed 
+colnames(data)
+data %>%
+  select("PIECETAG", "STEMTAG", "BDS.2014_new", "BDS.2017_new", "BDS.2021_new") -> bdsdata
+
+# code log/snag elements in bdsdata as 1 = snag, 2 = log 
+bdsdata <- bdsdata %>%
+    mutate(BDS.2014_new = case_when(
+      BDS.2014_new == "snag" ~ "1",
+      BDS.2014_new == "log" ~ "2")) %>% 
+  mutate(BDS.2017_new = case_when(
+    BDS.2017_new == "snag" ~ "1",
+    BDS.2017_new == "log" ~ "2")) %>% 
+  mutate(BDS.2021_new = case_when(
+    BDS.2021_new == "snag" ~ "1",
+    BDS.2021_new == "log" ~ "2"))
+
+# change variable type to interger 
+bdsdata$BDS.2014_new <- as.integer(bdsdata$BDS.2014_new) 
+bdsdata$BDS.2017_new <- as.integer(bdsdata$BDS.2017_new) 
+bdsdata$BDS.2021_new <- as.integer(bdsdata$BDS.2021_new) 
+str(bdsdata)
+
+# for 2014 - 2017 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2014 is column, 2017 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob
+
+# for 2017 - 2021 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2017 is column, 2021 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob2 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob2
+
+# for 2014 - 2021 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2014 is column, 2021 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob3 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob3
+```
+
+#### 5. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
 since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
 
 * 2014-2017: 3 years 
@@ -328,7 +395,7 @@ decay.prob4
 decay.prob4_an <- apply(decay.prob4, c(1, 2), annualize7)
 ```
 
-#### 5. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
+#### 6. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
 
 first start with a simulated matrix example: 
 ```{r}
@@ -447,7 +514,7 @@ decay.prob3
 
 # start out with 20 DC = 1 
 N <- matrix(0, ncol = 1, nrow = 3)
-N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
+N[, 1] <- matrix(c(50, 0, 0), ncol = 1)
 N
 
 # save t0 deadwood sum
@@ -500,6 +567,69 @@ N <- as.vector(N)
 # combine t0 - t4 into a dataframe 
 data <- data.frame(t0, t1, t2, t3, t4)
 matplot(t(data),type="l")
+```
+
+same as above, but use the 5 tiered example from 2017-2021
+
+```{r}
+decay.prob
+
+# start out with 20 DC = 1 
+N <- matrix(0, ncol = 1, nrow = 5)
+N[, 1] <- matrix(c(50, 0, 0, 0, 0), ncol = 1)
+N
+
+# save t0 deadwood sum
+t0 <- rowSums(N)
+
+# first year 
+N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t1 deadwood sum 
+t1 <- rowSums(N)
+N <- rowSums(N)
+N <- as.vector(N)
+
+# second year
+N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t2 deadwood sum 
+t2 <- rowSums(N)
+N <- rowSums(N)
+as.vector(N)
+
+# third year
+N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t3 deadwood sum 
+t3 <- rowSums(N)
+N <- rowSums(N)
+N <- as.vector(N)
+
+# fourth year
+N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t4 deadwood sum 
+t4 <- rowSums(N)
+N <- rowSums(N)
+N <- as.vector(N)
+
+# combine t0 - t4 into a dataframe 
+data <- data.frame(t0, t1, t2, t3, t4)
+matplot(t(data),type="l")
+
 ```
 
 turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
