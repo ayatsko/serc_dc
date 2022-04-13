@@ -442,47 +442,64 @@ the above examples show how one pulse at the original time affects decay class p
 next goal is to make simulations where repeated influxes are made at each time point
 
 ```{r}
-# trying to add pulses of DC = 1 each year 
-N <- matrix(0, ncol = 1, nrow = 3)
-
-# start out with 20
-N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
-
-N
-t0 <- rowSums(N)
+# trying to add pulses of DC = 1 each year for the decay.prob3 scenario (2014-2017)
 decay.prob3
+
+# start out with 20 DC = 1 
+N <- matrix(0, ncol = 1, nrow = 3)
+N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
+N
+
+# save t0 deadwood sum
+t0 <- rowSums(N)
 
 # first year 
 N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
 
-# flip matrix for new input values. should only be a row of values (inputs)
-N <- t(N)
-
-# add 10 to [1,1] element of N
+# add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
 
-N <- t(N)
-N <- N[,-2:-3]
-
-N <- as.vector(N)
+# save t1 deadwood sum 
 t1 <- rowSums(N)
-# these values in the first column of N are the output numbers of each decay class. 
-# they need to be transposed to the first row as inputs for the second year
+N <- rowSums(N)
+N <- as.vector(N)
 
 # second year
-
-
 N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
 
-# sum across rows for new inputs 
-N <- (rowSums(N))
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t2 deadwood sum 
+t2 <- rowSums(N)
+N <- rowSums(N)
 as.vector(N)
 
-N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
-N <- (rowSums(N))
-N <- as.vector(N)
+# third year
 N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
 
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t3 deadwood sum 
+t3 <- rowSums(N)
+N <- rowSums(N)
+N <- as.vector(N)
+
+# fourth year
+N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
+
+# add in 10 as the DC = 1 pulse
+N[1,1] <- N[1,1] + 10
+
+# save t4 deadwood sum 
+t4 <- rowSums(N)
+N <- rowSums(N)
+N <- as.vector(N)
+
+# combine t0 - t4 into a dataframe 
+data <- data.frame(t0, t1, t2, t3, t4)
+matplot(t(data),type="l")
 ```
 
 turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
