@@ -114,9 +114,8 @@ since multiple years pass between each deadwood survey, the probabilities in the
 
 the 'survival' also has to be taken into account and annualized - see code for this. it is necessary to make sure that we retain the same rates of 'leakage' where some pieces are not being re-found all together. 
 
-X code chunks in this section: 
+5 code chunks in this section: 
   * proof of concept 
-  * 4 code chunks in this section: 
   * annualize matrix for 2017-2021 (5 tier, 4 years)
   * annualize matrix for 2017-2021 (3 tier, 4 years)
   * annualize matrix for 2014-2017 (3 tier, 3 years)
@@ -168,91 +167,85 @@ decay.prob1yr
 
 annualize matrix for 2017-2021 (3 tier, 4 years)
 ```{r}
+# un-annualized matrix 
+decay.prob2
 
+# annualized survival probability
+decay.prob2surv <- colSums(decay.prob2) ^ (1 / yrs17to21) 
+
+# matrix of annualized transitions
+decay.prob2_y <- decay.prob2 ^ (1 / yrs17to21) 
+
+# new annualized matrix to fill in 
+decay.prob2yr <- matrix(NA, ncol = 3, nrow = 3) 
+
+# now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
+for(i in 1:dim(decay.prob2yr)[1]) {
+  decay.prob2yr[, i] <- (decay.prob2_y[, i] / colSums(decay.prob2_y)[i]) * decay.prob2surv[i]
+}
+
+decay.prob2yr
 ```
 
 annualize matrix for 2014-2017 (3 tier, 3 years)
 ```{r}
+# un-annualized matrix 
+decay.prob3
 
+# number of years between 2014-2017 survey
+yrs14to17 <- 3
+
+# annualized survival probability
+decay.prob3surv <- colSums(decay.prob3) ^ (1 / yrs14to17) 
+
+# matrix of annualized transitions
+decay.prob3_y <- decay.prob3 ^ (1 / yrs14to17) 
+
+# new annualized matrix to fill in 
+decay.prob3yr <- matrix(NA, ncol = 3, nrow = 3) 
+
+# now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
+for(i in 1:dim(decay.prob3yr)[1]) {
+  decay.prob3yr[, i] <- (decay.prob3_y[, i] / colSums(decay.prob3_y)[i]) * decay.prob3surv[i]
+}
+
+decay.prob3yr
 ```
 
 annualize matrix for 2014-2021 (3 tier, 7 years)
 ```{r}
+# un-annualized matrix 
+decay.prob4
 
+# number of years between 2014-2017 survey
+yrs14to21 <- 7
+
+# annualized survival probability
+decay.prob4surv <- colSums(decay.prob4) ^ (1 / yrs14to21) 
+
+# matrix of annualized transitions
+decay.prob4_y <- decay.prob4 ^ (1 / yrs14to21) 
+
+# new annualized matrix to fill in 
+decay.prob4yr <- matrix(NA, ncol = 3, nrow = 3) 
+
+# now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
+for(i in 1:dim(decay.prob4yr)[1]) {
+  decay.prob4yr[, i] <- (decay.prob4_y[, i] / colSums(decay.prob4_y)[i]) * decay.prob4surv[i]
+}
+
+decay.prob4yr
 ```
 
+#### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS (no pulse) ----
+now that the transition matrices are annualized and rearing to go, it is time to start with visualizations and time series plots to see how the deadwood pool changes over time 
 
-
-
-
-
-#### 4. BREAKDOWN STATUS PROBABILITY MATRIX FROM DATA ----
-
-```{r}
-# split data between snag and downed 
-colnames(data)
-data %>%
-  select("PIECETAG", "STEMTAG", "BDS.2014_new", "BDS.2017_new", "BDS.2021_new") -> bdsdata
-
-# code log/snag elements in bdsdata as 1 = snag, 2 = log 
-bdsdata <- bdsdata %>%
-    mutate(BDS.2014_new = case_when(
-      BDS.2014_new == "snag" ~ "1",
-      BDS.2014_new == "log" ~ "2")) %>% 
-  mutate(BDS.2017_new = case_when(
-    BDS.2017_new == "snag" ~ "1",
-    BDS.2017_new == "log" ~ "2")) %>% 
-  mutate(BDS.2021_new = case_when(
-    BDS.2021_new == "snag" ~ "1",
-    BDS.2021_new == "log" ~ "2"))
-
-# change variable type to interger 
-bdsdata$BDS.2014_new <- as.integer(bdsdata$BDS.2014_new) 
-bdsdata$BDS.2017_new <- as.integer(bdsdata$BDS.2017_new) 
-bdsdata$BDS.2021_new <- as.integer(bdsdata$BDS.2021_new) 
-str(bdsdata)
-
-# for 2014 - 2017 
-# create an empty 2x2 matrix (two options - log or snag)
-bds.mat <- matrix(0, nrow = 2, ncol = 2)
-
-# instructions for how to fill in the matrix: 2014 is column, 2017 is row
-for(i in 1:nrow(bdsdata)) {
-  bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] + 1
-}
-
-# percent probability of going from a particular decay state in 2017 to the next state in 2021 
-bds.prob <- sweep(bds.mat,2,colSums(bds.mat),`/`)
-bds.prob
-
-# for 2017 - 2021 
-# create an empty 2x2 matrix (two options - log or snag)
-bds.mat <- matrix(0, nrow = 2, ncol = 2)
-
-# instructions for how to fill in the matrix: 2017 is column, 2021 is row
-for(i in 1:nrow(bdsdata)) {
-  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] + 1
-}
-
-# percent probability of going from a particular decay state in 2017 to the next state in 2021 
-bds.prob2 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
-bds.prob2
-
-# for 2014 - 2021 
-# create an empty 2x2 matrix (two options - log or snag)
-bds.mat <- matrix(0, nrow = 2, ncol = 2)
-
-# instructions for how to fill in the matrix: 2014 is column, 2021 is row
-for(i in 1:nrow(bdsdata)) {
-  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] + 1
-}
-
-# percent probability of going from a particular decay state in 2017 to the next state in 2021 
-bds.prob3 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
-bds.prob3
-```
-
-#### 6. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
+X code chunks in this section: 
+  * simulated matrix example as proof of concept
+  * DW simulation for annualized matrix (2017-2021)
+  * DW simulation for annualized matrix (2017-2021)
+  * DW simulation for annualized matrix (2014-2017)
+  * DW simulation for annualized matrix (2014-2021)
 
 first start with a simulated matrix example: 
 ```{r}
@@ -303,71 +296,86 @@ ts.plot(t(N_tot), col = c(1, 2, 3))
 # play around with different values to see consequences of different decay class pool strengths 
 ```
 
-next use a calculated matrix from the 2017-2021 decay class transition data:
-NOTE this is transitioning *5 TIER* decay classes first, then *3 TIER* second
+DW simulation for annualized matrix (2017-2021, 5 tier)
 ```{r}
-# matrix is held in 'decay prob', using annualized version (decay.prob_an)
-decay.prob_an
+decay.prob1yr
+# yrs <- 25
 
-# timeframe and empty simulation matrix
-yrs <- 50
-N <- matrix(0, ncol = yrs, nrow = 5)
+# create a matrix (N_tot) for running the simulation out to the value of 'yrs'
+N_tot1 <- matrix(0, ncol = yrs, nrow = 5)
 
-# insert different starting conditions
-# just influx of a bunch of 1s and 2s
-N[, 1] <- matrix(c(300, 0, 0, 0, 0), ncol = 1)
+# input of 30 pieces of decay class 1 wood into the system at t1
+N_tot1[, 1] <- matrix(c(30, 0, 0, 0, 0), ncol = 1)
 
-# influx for a bunch of different classes across the decay process
-#N[, 1] <- matrix(c(300, 500, 550, 400, 200, 0), ncol = 1)
-
-# start the simulation in the second year. use the inputs from the first year 
-# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
+# start the simulation in the second year
+# use the inputs from the first year (30 pieces of decay class 1 wood) and run them against the annualized probability matrix 'decay.prob1yr'
 for(i in 2:yrs) {
-	N[, i] <- N[, i - 1] %*% decay.prob_an
+	N_tot1[, i] <- N_tot1[, i - 1] %*% decay.prob1yr
 }
 
-# look at the transition matrix simulated out to X years
-N 
+# look at the transition matrix simulated out to X years 
+N_tot1
 
 # display time series matrix simulation (N_tot) as a time series plot
-ts.plot(t(N), col = c("red", "green", "blue", "pink", "purple", "black"))
-
-
-# second matrix is when everything is converted to a 3 tier scale, here for 2017-2021
-decay.prob2_an
-
-# timeframe and empty simulation matrix
-yrs <- 5
-N <- matrix(0, ncol = yrs, nrow = 3)
-
-# insert different starting conditions
-# just influx of a bunch of 1s and 2s
-N[, 1] <- matrix(c(20, 0, 0), ncol = 1)
-
-# influx for a bunch of different classes across the decay process
-#N[, 1] <- matrix(c(300, 500, 300), ncol = 1)
-
-# start the simulation in the second year. use the inputs from the first year 
-# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
-for(i in 2:yrs) {
-	N[, i] <- N[, i - 1] %*% decay.prob2_an
-}
-
-# look at the transition matrix simulated out to X years
-N 
-
-# display time series matrix simulation (N_tot) as a time series plot
-ts.plot(t(N), col = c("red", "green", "blue"))
-
+ts.plot(t(N_tot1), col = c(1, 2, 3, 4, 5))
 ```
 
-the above examples show how one pulse at the original time affects decay class pools throughout time. 
+DW simulation for annualized matrix (2017-2021, 3 tier)
+```{r}
+decay.prob2yr
+N_tot2 <- matrix(0, ncol = yrs, nrow = 3)
+
+N_tot2[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+for(i in 2:yrs) {
+	N_tot2[, i] <- N_tot2[, i - 1] %*% decay.prob2yr
+}
+
+N_tot2
+
+ts.plot(t(N_tot2), col = c(1, 2, 3))
+```
+
+DW simulation for annualized matrix (2014-2017)
+```{r}
+decay.prob3yr
+N_tot3 <- matrix(0, ncol = yrs, nrow = 3)
+
+N_tot3[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+for(i in 2:yrs) {
+	N_tot3[, i] <- N_tot2[, i - 1] %*% decay.prob3yr
+}
+
+N_tot3
+
+ts.plot(t(N_tot3), col = c(1, 2, 3))
+```
+
+DW simulation for annualized matrix (2014-2021)
+```{r}
+decay.prob4yr
+N_tot4 <- matrix(0, ncol = yrs, nrow = 3)
+
+N_tot4[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+for(i in 2:yrs) {
+	N_tot4[, i] <- N_tot4[, i - 1] %*% decay.prob4yr
+}
+
+N_tot4
+
+ts.plot(t(N_tot4), col = c(1, 2, 3))
+```
+
+#### 5. CREATE DECAY CLASS TRANSITION SIMULATIONS (with pulse) ----
+the above examples show how one pulse at t1 affects decay class pools throughout time, but without annual additions of new deadwood. 
 
 next goal is to make simulations where repeated influxes are made at each time point
 
+TRIAL: add pulses for decay.prob3yr transition matrix (2014-2017)
 ```{r}
-# trying to add pulses of DC = 1 each year for the decay.prob3 scenario (2014-2017)
-decay.prob3
+decay.prob3yr
 
 # start out with 20 DC = 1 
 N <- matrix(0, ncol = 1, nrow = 3)
@@ -488,6 +496,16 @@ data <- data.frame(t0, t1, t2, t3, t4)
 matplot(t(data),type="l")
 
 ```
+
+
+
+
+
+
+DRAFT STUFF HERE AND BELOW:
+##################################################################
+##################################################################
+##################################################################
 
 turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
 ```{r}
