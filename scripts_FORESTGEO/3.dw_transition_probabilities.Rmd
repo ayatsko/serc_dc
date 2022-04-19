@@ -133,6 +133,7 @@ for(i in 1:dim(Ayr)[1]) {
 }
 ```
 
+START HERE 
 ```{r}
 # write annualize function (for different year gap scenarios: 3,4,7)
 
