@@ -373,71 +373,9 @@ the above examples show how one pulse at t1 affects decay class pools throughout
 
 next goal is to make simulations where repeated influxes are made at each time point
 
-TRIAL: add pulses for decay.prob3yr transition matrix (2014-2017)
+TRIAL: add pulses for decay.prob1yr transition matrix (2017-2021 with 5 tiers) to t4
 ```{r}
-decay.prob3yr
-
-# start out with 20 DC = 1 
-N <- matrix(0, ncol = 1, nrow = 3)
-N[, 1] <- matrix(c(50, 0, 0), ncol = 1)
-N
-
-# save t0 deadwood sum
-t0 <- rowSums(N)
-
-# first year 
-N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
-
-# add in 10 as the DC = 1 pulse
-N[1,1] <- N[1,1] + 10
-
-# save t1 deadwood sum 
-t1 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
-
-# second year
-N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
-
-# add in 10 as the DC = 1 pulse
-N[1,1] <- N[1,1] + 10
-
-# save t2 deadwood sum 
-t2 <- rowSums(N)
-N <- rowSums(N)
-as.vector(N)
-
-# third year
-N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
-
-# add in 10 as the DC = 1 pulse
-N[1,1] <- N[1,1] + 10
-
-# save t3 deadwood sum 
-t3 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
-
-# fourth year
-N <- (sweep(decay.prob3, MARGIN=2, N, `*`)) 
-
-# add in 10 as the DC = 1 pulse
-N[1,1] <- N[1,1] + 10
-
-# save t4 deadwood sum 
-t4 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
-
-# combine t0 - t4 into a dataframe 
-data <- data.frame(t0, t1, t2, t3, t4)
-matplot(t(data),type="l")
-```
-
-same as above, but use the 5 tiered example from 2017-2021
-
-```{r}
-decay.prob
+decay.prob1yr
 
 # start out with 20 DC = 1 
 N <- matrix(0, ncol = 1, nrow = 5)
@@ -447,8 +385,11 @@ N
 # save t0 deadwood sum
 t0 <- rowSums(N)
 
-# first year 
-N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+# first year - 50 DC1 have a certain probability of staying as 1's, going to 2's, and so on
+N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
+
+# sum of N[, 1] should be ~50
+sum(N[, 1])
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
@@ -459,7 +400,7 @@ N <- rowSums(N)
 N <- as.vector(N)
 
 # second year
-N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
@@ -470,7 +411,7 @@ N <- rowSums(N)
 as.vector(N)
 
 # third year
-N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
@@ -481,7 +422,7 @@ N <- rowSums(N)
 N <- as.vector(N)
 
 # fourth year
-N <- (sweep(decay.prob, MARGIN=2, N, `*`)) 
+N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
@@ -492,13 +433,11 @@ N <- rowSums(N)
 N <- as.vector(N)
 
 # combine t0 - t4 into a dataframe 
-data <- data.frame(t0, t1, t2, t3, t4)
-matplot(t(data),type="l")
-
+df <- data.frame(t0, t1, t2, t3, t4)
+matplot(t(df),type="l")
 ```
 
-
-
+GOAL is to have this in some kind of loop that can be simulated out to X years!
 
 
 
