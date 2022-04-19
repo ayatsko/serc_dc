@@ -27,27 +27,27 @@ generating 4 unique probability matrices, which will need to be annualized in th
 this section is just for transitioning from 2017 - 2021, but using 5 TIERS
 ```{r}
 # create an empty 5x5 matrix
-decay.mat <- matrix(0, nrow = 5, ncol = 5)
+decay.mat1 <- matrix(0, nrow = 5, ncol = 5)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
 for(i in 1:nrow(data)) {
-	decay.mat[data$DC.2021[i], data$DC.2017[i]] <- decay.mat[data$DC.2021[i], data$DC.2017[i]] + 1
+	decay.mat1[data$DC.2021[i], data$DC.2017[i]] <- decay.mat1[data$DC.2021[i], data$DC.2017[i]] + 1
 }
 
 # decay.mat shows the absolute numbers of pieces that were moving between decay stages from 2017-2021
-decay.mat
+decay.mat1
 # sum the columns to see how many 'came out the other end' of the transition
-colSums(decay.mat)
+colSums(decay.mat1)
 # table of data$DC.2017 shows initial inputs from 2017
 table(data$DC.2017)
-# there will be differences between table(data$DC.2017) and colSums(decay.mat) - this represents pieces that did not survive 
+# there will be differences between table(data$DC.2017) and colSums(decay.mat1) - this represents pieces that did not survive 
 
 # percent probability of going from a particular decay state in 2017 to the next state in 2021 
-decay.prob <- sweep(decay.mat,2,table(data$DC.2017),`/`) # need to be dividing by the table(data$DC.2017) counts rather than colSums(decay.mat)
-decay.prob
+decay.prob1 <- sweep(decay.mat1,2,table(data$DC.2017),`/`) # need to be dividing by the table(data$DC.2017) counts rather than colSums(decay.mat1)
+decay.prob1
 
 # to check and make sure that survival is not 100% (which it should not be) - colSums should be < 1.0 
-colSums(decay.prob)
+colSums(decay.prob1)
 
 # checks out! also makes sense because values get smaller and smaller. 'leakage' at the 1-2 decay stages should be low - this implies that most 1's and 2's are moving through to other decay classes further along, but not disappearing all together. for the 4's and 5's, 'survival' is lower because we expect the probability of 'recapture' to be lower. essentially, pieces at 4/5 are more likely to be moving out of the system, i.e. going undetected in further surveys.
 ```
@@ -55,56 +55,130 @@ colSums(decay.prob)
 this section is just for transitioning from 2017 - 2021, but using 3 TIERS
 ```{r}
 # create an empty 3x3 matrix
-decay.mat <- matrix(0, nrow = 3, ncol = 3)
+decay.mat2 <- matrix(0, nrow = 3, ncol = 3)
 
 # instructions for how to fill in the matrix: 2017 is column, 2021 is row
 for(i in 1:nrow(data)) {
-	decay.mat[data$DC.2021_3[i], data$DC.2017_3[i]] <- decay.mat[data$DC.2021_3[i], data$DC.2017_3[i]] + 1
+	decay.mat2[data$DC.2021_3[i], data$DC.2017_3[i]] <- decay.mat2[data$DC.2021_3[i], data$DC.2017_3[i]] + 1
 }
 
 # percent probability of going from a particular decay state in 2017 to the next state in 2021 
-decay.prob2 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob2 <- sweep(decay.mat2,2,table(data$DC.2017_3),`/`)
 decay.prob2
+colSums(decay.prob2)
 ```
 
 this section is just for transitioning from 2014 - 2017, but using 3 TIERS
 ```{r}
 # create an empty 3x3 matrix
 
-decay.mat <- matrix(0, nrow = 3, ncol = 3)
+decay.mat3 <- matrix(0, nrow = 3, ncol = 3)
 
 # instructions for how to fill in the matrix: 2014 is column, 2017 is row
 for(i in 1:nrow(data)) {
-	decay.mat[data$DC.2017_3[i], data$DC.2014[i]] <- decay.mat[data$DC.2017_3[i], data$DC.2014[i]] + 1
+	decay.mat3[data$DC.2017_3[i], data$DC.2014[i]] <- decay.mat3[data$DC.2017_3[i], data$DC.2014[i]] + 1
 }
 
 # percent probability of going from a particular decay state in 2014 to the next state in 2017 
-decay.prob3 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob3 <- sweep(decay.mat3,2,table(data$DC.2014),`/`)
 decay.prob3
-
+colSums(decay.prob3)
 ```
 
 this section is just for transitioning from 2014 - 2021, but using 3 TIERS
 ```{r}
 # create an empty 3x3 matrix
 
-decay.mat <- matrix(0, nrow = 3, ncol = 3)
+decay.mat4 <- matrix(0, nrow = 3, ncol = 3)
 
 # instructions for how to fill in the matrix: 2014 is column, 2017 is row
 for(i in 1:nrow(data)) {
-	decay.mat[data$DC.2021_3[i], data$DC.2014[i]] <- decay.mat[data$DC.2021_3[i], data$DC.2014[i]] + 1
+	decay.mat4[data$DC.2021_3[i], data$DC.2014[i]] <- decay.mat4[data$DC.2021_3[i], data$DC.2014[i]] + 1
 }
 
 # percent probability of going from a particular decay state in 2014 to the next state in 2017 
-decay.prob4 <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob4 <- sweep(decay.mat4,2,table(data$DC.2014),`/`)
 decay.prob4
-
+colSums(decay.prob4)
 ```
 
 interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales.
 
-#### 4. BREAKDOWN STATUS PROBABILITY MATRIX FROM DATA ----
 
+#### 3. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
+since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
+
+* 2014-2017: 3 years 
+* 2017-2021: 4 years 
+* 2014-2021: 7 years
+
+the 'survival' also has to be taken into account and annualized - see code for this. it is necessary to make sure that we retain the same rates of 'leakage' where some pieces are not being re-found all together. 
+
+this section includes X parts: 
+  * proof of concept 
+  * 
+proof of concept for annualizing transition matrix probabilities 
+```{r}
+yrs <- 5 # number of years between censuses
+
+A <- matrix(c(0.5, 0.25, 0, 0.5), ncol = 2) # Transition probabilities from column state at time t to row state at time t + yrs
+
+Asurv <- colSums(A) ^ (1 / yrs) # Annualized survival prob
+A_y <- A ^ (1 / yrs) # Matrix of annualized transitions
+
+Ayr <- matrix(NA, ncol = 2, nrow = 2) # new annualized matrix
+
+for(i in 1:dim(Ayr)[1]) {
+  Ayr[, i] <- (A_y[, i] / colSums(A_y)[i]) * Asurv[i] # We now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
+}
+```
+
+```{r}
+# write annualize function (for different year gap scenarios: 3,4,7)
+
+# for 3 years 
+annualize3 <- function(x) {
+  x_an <- x^(1/3)
+  return(x_an)
+}
+
+# for 4 years 
+annualize4 <- function(x) {
+  x_an <- x^(1/4)
+  return(x_an)
+}
+
+# for 7 years 
+annualize7 <- function(x) {
+  x_an <- x^(1/7)
+  return(x_an)
+}
+
+# 2017 - 2021 (5 tier)
+decay.prob
+decay.prob_an <- apply(decay.prob, c(1, 2), annualize4)
+
+# 2017 - 2021 (3 tier)
+decay.prob2
+decay.prob2_an <- apply(decay.prob2, c(1, 2), annualize4)
+
+# 2014 - 2017 (3 tier)
+decay.prob3
+decay.prob3_an <- apply(decay.prob3, c(1, 2), annualize3)
+
+# 2014 - 2021 (3 tier)
+decay.prob4
+decay.prob4_an <- apply(decay.prob4, c(1, 2), annualize7)
+```
+
+
+
+
+
+
+
+
+#### 4. BREAKDOWN STATUS PROBABILITY MATRIX FROM DATA ----
 
 ```{r}
 # split data between snag and downed 
@@ -168,58 +242,6 @@ for(i in 1:nrow(bdsdata)) {
 # percent probability of going from a particular decay state in 2017 to the next state in 2021 
 bds.prob3 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
 bds.prob3
-```
-
-#### 5. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
-since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
-
-* 2014-2017: 3 years 
-* 2017-2021: 4 years 
-* 2014-2021: 7 years
-
-the way to do this is (% in matrix)^(1/years passed)
-
-or does it make sense to do proportions? 
-(0.5 change) / (3 years) = (? change) / (1 year)
-
-(? change) = (0.5 change) / (3 years)
-
-```{r}
-# write annualize function (for different year gap scenarios: 3,4,7)
-
-# for 3 years 
-annualize3 <- function(x) {
-  x_an <- x^(1/3)
-  return(x_an)
-}
-
-# for 4 years 
-annualize4 <- function(x) {
-  x_an <- x^(1/4)
-  return(x_an)
-}
-
-# for 7 years 
-annualize7 <- function(x) {
-  x_an <- x^(1/7)
-  return(x_an)
-}
-
-# 2017 - 2021 (5 tier)
-decay.prob
-decay.prob_an <- apply(decay.prob, c(1, 2), annualize4)
-
-# 2017 - 2021 (3 tier)
-decay.prob2
-decay.prob2_an <- apply(decay.prob2, c(1, 2), annualize4)
-
-# 2014 - 2017 (3 tier)
-decay.prob3
-decay.prob3_an <- apply(decay.prob3, c(1, 2), annualize3)
-
-# 2014 - 2021 (3 tier)
-decay.prob4
-decay.prob4_an <- apply(decay.prob4, c(1, 2), annualize7)
 ```
 
 #### 6. CREATE DECAY CLASS TRANSITION SIMULATIONS ----
