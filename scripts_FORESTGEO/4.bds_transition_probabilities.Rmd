@@ -1,0 +1,82 @@
+---
+title: "breakdown status transitions"
+author: "abbey yatsko"
+date: "4/19/2022"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+#### 1. READ IN DATA ----
+```{r}
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/transition_survey_14-21.csv")
+```
+
+#### 2. BREAKDOWN STATUS PROBABILITY MATRIX FROM DATA ----
+
+```{r}
+# split data between snag and downed 
+colnames(data)
+data %>%
+  select("PIECETAG", "STEMTAG", "BDS.2014_new", "BDS.2017_new", "BDS.2021_new") -> bdsdata
+
+# code log/snag elements in bdsdata as 1 = snag, 2 = log 
+bdsdata <- bdsdata %>%
+    mutate(BDS.2014_new = case_when(
+      BDS.2014_new == "snag" ~ "1",
+      BDS.2014_new == "log" ~ "2")) %>% 
+  mutate(BDS.2017_new = case_when(
+    BDS.2017_new == "snag" ~ "1",
+    BDS.2017_new == "log" ~ "2")) %>% 
+  mutate(BDS.2021_new = case_when(
+    BDS.2021_new == "snag" ~ "1",
+    BDS.2021_new == "log" ~ "2"))
+
+# change variable type to interger 
+bdsdata$BDS.2014_new <- as.integer(bdsdata$BDS.2014_new) 
+bdsdata$BDS.2017_new <- as.integer(bdsdata$BDS.2017_new) 
+bdsdata$BDS.2021_new <- as.integer(bdsdata$BDS.2021_new) 
+str(bdsdata)
+
+# for 2014 - 2017 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2014 is column, 2017 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2017_new[i], bdsdata$BDS.2014_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob
+
+# for 2017 - 2021 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2017 is column, 2021 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2017_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob2 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob2
+
+# for 2014 - 2021 
+# create an empty 2x2 matrix (two options - log or snag)
+bds.mat <- matrix(0, nrow = 2, ncol = 2)
+
+# instructions for how to fill in the matrix: 2014 is column, 2021 is row
+for(i in 1:nrow(bdsdata)) {
+  bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] <- bds.mat[bdsdata$BDS.2021_new[i], bdsdata$BDS.2014_new[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+bds.prob3 <- sweep(bds.mat,2,colSums(bds.mat),`/`)
+bds.prob3
+```
