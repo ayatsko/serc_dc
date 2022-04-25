@@ -374,6 +374,8 @@ the above examples show how one pulse at t1 affects decay class pools throughout
 next goal is to make simulations where repeated influxes are made at each time point
 
 TRIAL: add pulses for decay.prob1yr transition matrix (2017-2021 with 5 tiers) to t4
+
+NOTE: need to figure out how to make this into a loop - ask sean 
 ```{r}
 decay.prob1yr
 
