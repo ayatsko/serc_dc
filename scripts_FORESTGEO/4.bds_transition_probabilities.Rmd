@@ -8,7 +8,7 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
+ goal: make transition matrix for snags and logs seperately
 
 #### 1. READ IN DATA ----
 ```{r}
