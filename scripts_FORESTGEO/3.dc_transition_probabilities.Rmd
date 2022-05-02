@@ -442,6 +442,7 @@ matplot(t(df),type="l")
 GOAL is to have this in some kind of loop that can be simulated out to X years!
 
 i made progress 
+did I ? 
 
 DRAFT STUFF HERE AND BELOW:
 ##################################################################

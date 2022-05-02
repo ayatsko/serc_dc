@@ -1,0 +1,285 @@
+---
+title: "Untitled"
+author: "abbey yatsko"
+date: "11/4/2021"
+output: html_document
+---
+
+read in data and set workspace 
+```{r}
+# call this data 'cleaned_survey_14-21'
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
+library(ggplot2)
+library(ggpubr)
+library(dplyr)
+```
+
+#### 1. INITIAL PLOTS FOR DW DISTRIBUTION ----
+
+Plot 1: decay class distribution by breakdown status
+```{r}
+# fix the breakdown status for 2014 - change it from the werid language to just log and snag 
+data <- data %>%
+  mutate(BDS.2014_new = case_when(
+    BDS.2014 == "lying broken" ~ "log", 
+    BDS.2014 == "standing dead" ~ "snag",
+    BDS.2014 == "standing broken" ~ "snag",
+    BDS.2014 == "lying whole" ~ "log", 
+    BDS.2014 == "lying cut" ~ "log",
+    BDS.2014 == "standing cut" ~ "snag"
+    ))
+# fix the breakdown status for 2021 (one 'snag' has an extra space behind it)
+data <- data %>%
+  mutate(BDS.2021_new = case_when(
+    BDS.2021 == "Snag " ~ "Snag", 
+    BDS.2021 == "Snag" ~ "Snag",
+    BDS.2021 == "Log" ~ "Log"
+    ))
+    
+# create plots by year that show decay class and then the proportion of log / snag things that make up the count 
+
+dc2014 <- ggplot(data = subset(data, !is.na(DC.2014)), aes(x=DC.2014, fill=BDS.2014_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("log","snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2017 <- ggplot(data = subset(data, !is.na(DC.2017)), aes(x=DC.2017, fill=BDS.2017)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+dc2021 <- ggplot(data = subset(data, !is.na(DC.2021)), aes(x=DC.2021, fill=BDS.2021_new)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+ggarrange(dc2014, dc2017, dc2021, nrow = 1)
+
+# NOVERMBER 4 - note that there are now 6 decay classes for 2017 and 2021 surveys. this is because i went back in to the excel files to make the following changes:
+# > 2017: when there was a BDS.2017 == "consumed" 
+# > 2021: when there was a NOTES.2021 == "not found" or some corresponding variety 
+# ultimtaely DC = 6 means that the piece has moved out of the system 
+
+# create plos that shows species distribution 
+
+speciesdist <- ggplot(data = subset(data, !is.na(SPCODE)), aes(x=SPCODE)) + 
+  geom_bar(position="stack", stat="count")+
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+```
+
+#### 2. DECAY CLASS TRANSITION PROBABILITIES ----
+
+main question: what are the probabilities of transition between the different states (1-3 decay classes) across three time points (2014, 2017, 2021)?
+
+this section is just for transitioning from 2017 - 2021
+```{r}
+# create an empty 6x6 matrix
+# 6x6 because we have decay classes 1-5 and then a 6th class which encompasses pieces that move out of the system or 'die' 
+decay.mat <- matrix(0, nrow = 6, ncol = 6)
+
+# instructions for how to fill in the matrix: 2017 is column, 2021 is row
+for(i in 1:nrow(data)) {
+	decay.mat[data$DC.2021[i], data$DC.2017[i]] <- decay.mat[data$DC.2021[i], data$DC.2017[i]] + 1
+}
+
+# percent probability of going from a particular decay state in 2017 to the next state in 2021 
+decay.prob <- sweep(decay.mat,2,colSums(decay.mat),`/`)
+decay.prob
+```
+
+#### 3. GETTING SURVEYS TO TALK ----
+
+two problems: 
+> 2014 is in three-tiers, while 2017/2021 is in 5 
+> we could also split out the 2014 data into 5 tiers, but we need more information on how to do this 
+
+this is code for how collapsing the 2017 and 2021 data could work (skip for now)
+```{r}
+# QUESTION: how to break up 1 into 1's and 2's as well as 2 into 3's and 4's? 
+# when building transition matrix, need DC to be equivalent across the three surveys 
+# currently, it is not like that! 
+
+# this is the code for going the other direction: now we are splitting up all decay classes into 3 tier 
+# convert 2017 and 2021 decay class data to the 3 tiered scale based on the above criteria: 
+
+  # 1 = 1,2
+  # 2 = 3,4
+  # 3 = 5
+
+# in 'data' - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
+# not changing DC.2014 because it is already in terms of 3 tier decay class 
+
+# for 2017 survey
+data$DC.2017_3 <- ifelse((data$DC.2017 == "1") | (data$DC.2017 == "2"), "1",
+                       ifelse((data$DC.2017 == "3") | (data$DC.2017 == "4"), "2",
+                              ifelse((data$DC.2017 == "5"), "3", NA)))
+
+unique(data$DC.2017_3)
+
+# plot this 
+ggplot(data = subset(data, !is.na(DC.2017_3)), aes(x=DC.2017_3, fill=BDS.2017)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue"))
+
+# for 2021 survey
+data$DC.2021_3 <- ifelse((data$DC.2021 == "1") | (data$DC.2021 == "2"), "1",
+                       ifelse((data$DC.2021 == "3") | (data$DC.2021 == "4"), "2",
+                              ifelse((data$DC.2021 == "5"), "3", NA)))
+
+unique(data$DC.2021_3)
+
+data[c("DC.2021", "DC.2021_3")]
+
+# plot this 
+ggplot(data = subset(data, !is.na(DC.2021_3)), aes(x=DC.2021_3, fill=BDS.2021)) + 
+  geom_bar(position="stack", stat="count")+
+  scale_fill_manual( breaks = c("Log", "Snag", "Consumed"),
+                    values = c("darkgreen", "orange", "red", "blue", "black", "brown")) # weird error with number of things on the scale - added black and brown but it doesnt actually change the fig... 
+
+# in new.df - create 2 new columns 'DC.2017_3' and 'DC.2021_3'
+# 
+# new.df <- new.df %>%
+#   mutate(DC.2017_3 = case_when(
+#     DC.2017 == "1" ~ "1", 
+#     DC.2017 == "2" ~ "2",
+#     DC.2017 == "3" ~ "2",
+#     DC.2017 == "4" ~ "3", 
+#     DC.2017 == "5" ~ "3",
+#     ))
+# select(new.df, DC.2017, DC.2017_3)
+# 
+# new.df <- new.df %>%
+#   mutate(DC.2021_3 = case_when(
+#     DC.2021 == "1" ~ "1", 
+#     DC.2021 == "2" ~ "2",
+#     DC.2021 == "3" ~ "2",
+#     DC.2021 == "4" ~ "3", 
+#     DC.2021 == "5" ~ "3",
+#     ))
+# select(new.df, PIECETAG, DC.2021, DC.2021_3)
+# 
+# tm_data <- select (new.df, PIECETAG, DC.2014, DC.2017_3, DC.2021_3)
+
+```
+
+
+#### 4. DECAY CLASS TRANSITION PROBABILITIES ----
+
+first start with a simulated matrix example: 
+```{r}
+# set up an empty matrix
+A <- matrix(0, 3, 3)
+
+# populate matrix with different 'decay transition probabilities'
+A[1, 1] <- 0.3
+A[1, 2] <- 0.6
+A[1, 3] <- 0.1
+A[2, 1] <- 0.05
+A[2, 2] <- 0.5
+A[2, 3] <- 0.45
+A[3, 1] <- 0.01
+A[3, 2] <- 0.15
+A[3, 3] <- 0.84
+
+# see what the matrix looks like 
+A
+
+# pick a timeframe for the simulation to run over - here it is 50 years 
+yrs <- 25
+
+# create a matrix (N_tot) for running the simulation, where the columns are each year of 
+# the simulation and the rows are the proportion of pieces in each decay class, by year
+N_tot <- matrix(0, ncol = yrs, nrow = 3)
+
+# in the first year, put in 30 pieces of decay class 1 wood into the system 
+N_tot[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+# start the simulation in the second year. use the inputs from the first year 
+# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
+for(i in 2:yrs) {
+	N_tot[, i] <- N_tot[, i - 1] %*% A
+}
+
+# look at the transition matrix simulated out to X years 
+N_tot 
+
+# display time series matrix simulation (N_tot) as a time series plot
+ts.plot(t(N_tot), col = c(1, 2, 3))
+
+# color legend: 
+# DC1 = black
+# DC2 = red 
+# DC3 = green
+
+# play around with different values to see consequences of different decay class pool strengths 
+```
+
+next use a calculated matrix from the 2017-2021 decay class transition data:
+NOTE this is transitioning *5 TIER* decay classes 
+```{r}
+# matrix is held in 'decay prob' (note that 6 = fully left the system)
+decay.prob
+
+# timeframe and empty simulation matrix
+yrs <- 5
+N <- matrix(0, ncol = yrs, nrow = 6)
+
+# insert different starting conditions
+N[, 1] <- matrix(c(300, 100, 0, 0, 0, 0), ncol = 1)
+ N[, 1] <- matrix(c(300, 500, 550, 400, 200, 0), ncol = 1)
+
+# start the simulation in the second year. use the inputs from the first year 
+# (30 pieces of decay class 1 wood) and run them against the probability matrix 'A'
+for(i in 2:yrs) {
+	N[, i] <- N[, i - 1] %*% decay.prob
+}
+
+# look at the transition matrix simulated out to X years
+N 
+
+# display time series matrix simulation (N_tot) as a time series plot
+ts.plot(t(N), col = c(1, 2, 3, 4, 5, 6))
+```
+
+turn back to a simulated matrix, 'A', and build in new elements (see notes with sean)
+```{r}
+# matrix, but add confidence intervals for prediction values 
+A[1, 1] <- rnorm(1, 0.3, 0.05)
+A[1, 2] <- 0.6
+A[1, 3] <- 0.1
+A[2, 1] <- 0.05
+A[2, 2] <- 0.5
+A[2, 3] <- 0.45
+A[3, 1] <- 0.01
+A[3, 2] <- 0.15
+A[3, 3] <- 0.84
+A
+
+# timeframe and populating matrix setup 
+yrs <- 50
+N_tot <- matrix(0, ncol = yrs, nrow = 3)
+N_tot[, 1] <- matrix(c(30, 0, 0), ncol = 1)
+
+# two loops where the first now feeds into the second (old loop)
+# in the first loop you are sampling the larger dataset in order to make multiuple 'A' matrices 
+#for(j in 1:samp) {  
+
+# then add in the j randomly sampled A matrices into the loop
+# for(i in 2:yrs) {
+	N[, i, j] <- N_tot[, i - 1] %*% A
+#}
+#}
+	
+ts.plot(t(N_tot), col = c(1, 2, 3))
+samp <- 1000
+N <- array(0, dim = c(3, yrs, samp))
+
+# use 'apply()' to get means and quantiles from the N array.
+
+# hint: lines()
+```
+
+
+
+
