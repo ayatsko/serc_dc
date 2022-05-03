@@ -377,15 +377,23 @@ TRIAL: add pulses for decay.prob1yr transition matrix (2017-2021 with 5 tiers) t
 
 NOTE: need to figure out how to make this into a loop - ask sean 
 ```{r}
+# starting annualized transition matrix (representing 2017-2021 on 5 tiers)
 decay.prob1yr
+#           [,1]       [,2]      [,3]      [,4]      [,5]
+# [1,] 0.20549134 0.09763219 0.0000000 0.0000000 0.0000000
+# [2,] 0.31729342 0.24705236 0.1778925 0.1629008 0.0000000
+# [3,] 0.22008484 0.26342804 0.2867369 0.2332037 0.0000000
+# [4,] 0.15404334 0.22458593 0.2535208 0.2821524 0.0000000
+# [5,] 0.09842493 0.13807277 0.2316419 0.2505937 0.7598357
 
-# start out with 20 DC = 1 
+# t0 Start
+# start out with 50 DC = 1 at t0
 N <- matrix(0, ncol = 1, nrow = 5)
 N[, 1] <- matrix(c(50, 0, 0, 0, 0), ncol = 1)
 N
 
-# save t0 deadwood sum
-t0 <- rowSums(N)
+# save t0 start deadwood sum (representing total in decay class 1)
+t0s <- colSums(N)
 
 # first year - 50 DC1 have a certain probability of staying as 1's, going to 2's, and so on
 N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
