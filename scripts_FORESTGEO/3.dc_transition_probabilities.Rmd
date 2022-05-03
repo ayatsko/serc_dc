@@ -392,58 +392,52 @@ N <- matrix(0, ncol = 1, nrow = 5)
 N[, 1] <- matrix(c(50, 0, 0, 0, 0), ncol = 1)
 N
 
-# save t0 start deadwood sum (representing total in decay class 1)
-t0s <- colSums(N)
+# save t0 deadwood sum (representing total in decay class 1)
+t0 <- matrix(rowSums(N), ncol = 1)
 
-# first year - 50 DC1 have a certain probability of staying as 1's, going to 2's, and so on
-N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
+# move t0 through matrix
+N <- (sweep(decay.prob1yr, MARGIN=2, t0, `*`)) 
 
-# sum of N[, 1] should be ~50
+# check: sum of N[, 1] should be ~50
 sum(N[, 1])
 
-# add in 10 as the DC = 1 pulse
+# t1: add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
 
 # save t1 deadwood sum 
-t1 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
+t1 <- matrix(rowSums(N), ncol = 1)
 
-# second year
-N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
+# now, input t1 into the transition matrix in t1
+N <- (sweep(decay.prob1yr, MARGIN=2, t1, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
 
 # save t2 deadwood sum 
-t2 <- rowSums(N)
-N <- rowSums(N)
-as.vector(N)
+t2 <- matrix(rowSums(N), ncol = 1)
 
-# third year
-N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
+# input t2 into the transition matrix
+N <- (sweep(decay.prob1yr, MARGIN=2, t2, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
 
 # save t3 deadwood sum 
-t3 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
+t3 <- matrix(rowSums(N), ncol = 1)
 
-# fourth year
-N <- (sweep(decay.prob1yr, MARGIN=2, N, `*`)) 
+# input t3 into the transition matrix
+N <- (sweep(decay.prob1yr, MARGIN=2, t3, `*`)) 
 
 # add in 10 as the DC = 1 pulse
 N[1,1] <- N[1,1] + 10
 
 # save t4 deadwood sum 
-t4 <- rowSums(N)
-N <- rowSums(N)
-N <- as.vector(N)
+t4 <- matrix(rowSums(N), ncol = 1)
 
 # combine t0 - t4 into a dataframe 
 df <- data.frame(t0, t1, t2, t3, t4)
+
+# plot the 'timeseries' 
 matplot(t(df),type="l")
 ```
 
