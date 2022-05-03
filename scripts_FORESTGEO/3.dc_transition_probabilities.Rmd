@@ -386,13 +386,21 @@ decay.prob1yr
 # [4,] 0.15404334 0.22458593 0.2535208 0.2821524 0.0000000
 # [5,] 0.09842493 0.13807277 0.2316419 0.2505937 0.7598357
 
+# recreate this matrix for sean 
+decay.prob1yr <- matrix(c(0.20549134, 0.31729342, 0.22008484, 0.15404334, 0.09842493, 
+                          0.09763219, 0.24705236, 0.26342804, 0.22458593, 0.13807277, 
+                          0.0000000, 0.1778925, 0.2867369, 0.2535208, 0.2316419, 
+                          0.0000000, 0.1629008, 0.2332037, 0.2821524, 0.2505937, 
+                          0.0000000, 0.0000000, 0.0000000, 0.0000000, 0.7598357),
+                        nrow = 5, ncol = 5)
+
 # t0 Start
 # start out with 50 DC = 1 at t0
 N <- matrix(0, ncol = 1, nrow = 5)
 N[, 1] <- matrix(c(50, 0, 0, 0, 0), ncol = 1)
 N
 
-# save t0 deadwood sum (representing total in decay class 1)
+# save t0 deadwood sum (representing only total in DC1 since this is the only thing in the system currently)
 t0 <- matrix(rowSums(N), ncol = 1)
 
 # move t0 through matrix
@@ -434,7 +442,7 @@ N[1,1] <- N[1,1] + 10
 # save t4 deadwood sum 
 t4 <- matrix(rowSums(N), ncol = 1)
 
-# combine t0 - t4 into a dataframe 
+# combine t0 - t4 into a dataframe to graph the t0 - t4 'time series'
 df <- data.frame(t0, t1, t2, t3, t4)
 
 # plot the 'timeseries' 
