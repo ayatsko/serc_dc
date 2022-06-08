@@ -33,17 +33,19 @@ library(dplyr)
 
 # day 1 data load and prep 
 # set working directory
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FLUX/pilot/2021-08-03")
 # get names of all LGR files with GHG concentration, a.k.a the data with the form ('...f####.txt')
 filenames_d1 <- list.files(pattern='f0',full.names=T)
 # read in LGR datafiles to list and go from .txt to .csv 
 data_d1 <- lapply(filenames_d1,read.csv,skip=1)
 # combine all files into single dataframe for day 1 
 dat_all_d1 <- do.call(rbind,data_d1)
+```
 
+```{r}
 # day 2 data load and prep 
 # repeat above steps 
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FLUX/pilot/2021-08-04")
 filenames_d2 <- list.files(pattern='f0',full.names=T)
 data_d2 <- lapply(filenames_d2,read.csv,skip=1)
 dat_all_d2 <- do.call(rbind,data_d2)
@@ -121,7 +123,7 @@ read in and format metadata, focusing on fraction Day of Year (fDOY):
 ```{r format metadata}
 # day 1 data 
 # read in file with metadata
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-03")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FLUX/pilot/2021-08-03")
 mdd1 <- read.csv('plot_metadata_day1.csv')
 as.Date(mdd1$Date, '%m/%d/%y')
 
@@ -139,10 +141,12 @@ mdd1_date_time_end <- mdd1_date_time_start+270
 fDOY_start <- as.numeric(julian(mdd1_date_time_start,'2021-01-01'))  #Change for year
 fDOY_end <- as.numeric(julian(mdd1_date_time_end,'2021-01-01'))  #Change for year
 mdd1 <- cbind(fDOY_start,fDOY_end,mdd1)
+```
 
+```{r}
 # day 2 data 
 # repeat all  steps accordingly 
-setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/pilot_LGR/2021-08-04")
+setwd("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FLUX/pilot/2021-08-04")
 mdd2 <- read.csv('plot_metadata_day2.csv')
 as.Date(mdd2$Date, '%m/%d/%y')
 mdd2_date_time_start <- strptime(paste(mdd2$Date,mdd2$Time_start),'%m/%d/%y %H:%M')
