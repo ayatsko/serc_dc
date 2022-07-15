@@ -65,37 +65,21 @@ ashplot <- ggplot(data = ash, aes(x = DC.2021)) +
 # BUILD SAMPLING DATA
 
 # look at decay class distribution by species 
+ggplot(data = dw_select, aes(x = DC.2021)) + 
+  geom_bar(position="stack", stat="count")+ 
+  facet_wrap(~SPCODE)+
+  theme_light()
 
+# species with the broadest distribution across 5 decay classes: 
+# ACRU - red maple
+# CATO6 - hickory
+# COFL2 - flowering dogwood
+# LIST2 - sweetgum
+# LITU - tulip tree
+# QUXX collectively - all of the oaks 
 
+# write file including targeted deadwood samples based on species and decay classes 
 
-
-
-
-
-
-
-# SPECIES 1: LITU
-# what is decay class distribution (2021) for all LITUs 
-dw_LITU <- dplyr::filter(dw_select, SPCODE %in% c("LITU"))
-
-# distribution of decay classes 
-ggplot(dw_LITU, aes(x=DC.2021)) + geom_histogram()
-
-# SPECIES 2: LIST2
-# what is decay class distribution (2021) for all QURU 
-dw_LIST2 <- dplyr::filter(dw_select, SPCODE %in% c("LIST2"))
-
-# distribution of decay classes 
-ggplot(dw_LIST2, aes(x=DC.2021)) + geom_histogram()
-
-# PILOT DATA GOAL: sample at least 3 replicates from DC 1, 3, 5
-# for pilot data sampling - pull from LITU and LIST2
-
-pilot <- rbind(dw_LITU, dw_LIST2)
-# remove rows that have NA for DC.2021 - not helpful 
-pilot <- pilot[complete.cases(pilot[ , 9]),]
-
-#export .csv
-write.csv(pilot,"/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/pilot.csv", row.names = FALSE)
+# export .csv
 
 
