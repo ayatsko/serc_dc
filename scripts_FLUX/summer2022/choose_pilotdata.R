@@ -2,31 +2,24 @@
 # this is the next step for thinking about sampling. what do we want to measure, how should we choose pieces? 
 #   
 #   goals for sampling: 
-# * gas flux (LGR chamber measurements)
+#   * gas flux (LGR chamber measurements)
 # * microbes (sawdust, CTAB, then sequencing)
 # * also potentially some kind of moisture content (?)
 # 
 # considerations for sampling: 
-# * in my grant proposals, I wanted to key into 1-2 species and then sample across all 5 decay classes 
-# * search time could be a little intense - to sample, id be going out into forestGEO with quads and coordinates, but it would 
-#   still be a search process
-# * right now, sawing out little cubes seems to be the best bet for subsampling logs. still up for debate is multiple samples
-#   along the length of the log to better spatially represent decay, if a single cube could be sufficient for flux, moisture content, and also what best methods can be used in drilling for microbes 
+#   * in my grant proposals, I wanted to key into 1-2 species and then sample across all 5 decay classes 
+# * search time could be a little intense - to sample, id be going out into forestGEO with quads and coordinates, but it would still be a search process
+# * right now, sawing out little cubes seems to be the best bet for subsampling logs. still up for debate is multiple samples along the length of the log to better spatially represent decay, if a single cube could be sufficient for flux, moisture content, and also what best methods can be used in drilling for microbes 
 # 
 # what we are looking for in the dataframe:
-# * samples that have DC for all 3 'timepoints' (?) (2014, 2017, 2021) -> 'complete cases'
+#   * samples that have DC for all 3 'timepoints' (?) (2014, 2017, 2021) -> 'complete cases'
 # * alternatively, is it ok if there are measures for JUST 2014 and 2021, or JUST 2017 and 2021 -> 'partial cases'
 # * we also should take a look at how many complete cases exist for the target species that we named (oak, QUERC and tulip poplar, LITU) 
 
-# libraries
-library(dplyr)
-library(ggplot2)
-library(tidyr)
-
 # read in data 
-new.df <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
+new.df <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/FINAL_DATA/cleaned_survey_14-21.csv")
 
-# from new.df: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
+# from df.new: want PIECETAG, SPCODE, and then all records for DC across the 3 surveys 
 dw_select <- new.df %>%
   select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2014', 'DC.2017', 'DC.2021'))
 # what kind of species are there?
