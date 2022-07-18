@@ -28,7 +28,7 @@ new.df <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGE
 
 # from df.new: want PIECETAG, SPCODE, location information, BDS.2021 (to differentiate snag/log), and information for DC.2021 
 dw_select <- new.df %>%
-  select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2021', 'BDS.2021'))
+  select(c('STEMTAG', 'PIECETAG', "QUADNAME", "QX.x", "QY.x", 'SPCODE', 'DC.2021', 'BDS.2021', 'DBH.2014', 'DBH.2017', 'DBH.2019', 'DBH.2021'))
 
 # exclude samples with no information for DC.2021
 dw_select <-dw_select[!is.na(dw_select$DC.2021),]
@@ -77,9 +77,42 @@ ggplot(data = dw_select, aes(x = DC.2021)) +
 # LIST2 - sweetgum
 # LITU - tulip tree
 # QUXX collectively - all of the oaks 
+#   QUAL, QUCO2, QUERC, QUFA, QUPA2, QURU, QUVE
 
 # write file including targeted deadwood samples based on species and decay classes 
 
-# export .csv
+# create vector with targeted species to sample 
+selected_species <- c("ACRU" , "CATO6" , "COFL2" , "LIST2" , "LITU" , "QUAL", "QUCO2", "QUERC", "QUFA", "QUPA2", "QURU", "QUVE")
 
+# subset out data that belongs to selected_species vector
+sample <- dw_select[dw_select$SPCODE %in% selected_species, ]
+
+# look at decay class distribution by species, add counts of DW pieces
+ggplot(data = sample, aes(x = DC.2021)) + 
+  geom_bar(position="stack", stat="count")+ 
+  facet_wrap(~SPCODE)+
+  theme_light()+ 
+  geom_text(aes(label = ..count..), stat = "count", position = "fill")
+
+# export .csv
+write.csv(sample,"/Users/abbeyyatsko/Downloads/draft_dw_samples.csv", row.names = FALSE)
+
+# some of the samples in draft_dw_samples.csv were missing coordinate info. I went in and manually added some (but not all) missing info
+# read updated .csv back in 
+df <- read.csv("/Users/abbeyyatsko/Desktop/serc2022/draft_dw_samples.csv")
+str(df)
+
+# create vector that contains all of the oak species, going to recategorize more generally as quercus spp. 
+oak <- c("QUAL", "QUCO2", "QUERC", "QUFA", "QUPA2", "QURU", "QUVE")
+df$SPCODE[df$SPCODE %in% oak] <- "QUERCUS"
+
+# re-generate species-level decay class distribution graph: 
+ggplot(data = df, aes(x = DC.2021)) + 
+  geom_bar(position="stack", stat="count")+ 
+  facet_wrap(~SPCODE)+
+  theme_light()+ 
+  geom_text(aes(label = ..count..), stat = "count", position = "fill")
+
+# export .csv
+write.csv(df,"/Users/abbeyyatsko/Desktop/serc2022/dw_target_samples.csv", row.names = FALSE)
 
