@@ -127,3 +127,48 @@ write.csv(dw_samples,"/Users/abbeyyatsko/Downloads/dw_targetsamples.csv", row.na
 # additionally a field note column ('tag_notes') was added after 18 July fieldwork 
 # tag_notes may require additional information to be added (lengths, diameters, identified pieces that were no longer around)
 # additional information was manually entered, referencing other living/deadwood surveys in the plot
+
+# read in annotated main sampling data sheet 
+df <- read.csv("/Users/abbeyyatsko/Desktop/serc2022/dw_targetsamples.csv")
+unique(df$tag_notes)
+
+# subset out samples that were not found 
+
+# re-graph distribution of decay classes by a) species and b) total  
+
+# make a new column for 'most recent diameter' that is filled in by a rule set of first taking the 2021 value (if it's there), 
+# then going to 2017, the 2014 
+
+# plot out where deadwood samples are in the forestgeo plot 
+  # make some kind of maps for going out an sampling - having targeted groups 
+  # emulate the pnw and stck maps from residrilling 
+  # color for species, size for most recent diameter
+
+ggplot(df, aes(x = QX.x, y = QY.x, color = SPCODE)) + 
+  geom_point() + 
+  facet_wrap(~QUADNAME)
+
+# read in GPS unit data to make maps? 
+install.packages("gpx")
+library(gpx)
+dw_coords <- read_gpx("/Users/abbeyyatsko/Desktop/serc2022/maps/SERC deadwood.GPX")
+dw_coords <- as.data.frame(dw_coords$waypoints)
+
+# pull out columns of interest: lat, long, and ID (name)
+dw_coords <- dw_coords %>%
+  select(c('Latitude', 'Longitude', "Name"))
+
+# rename name to be STEMTAG 
+names(dw_coords)[3] <- "STEMTAG"
+
+# merge in lat/long data based on the STEMTAG identifier 
+df_merge <- merge(df, dw_coords, by="STEMTAG", all.x = TRUE)
+
+# plot this to generate a 'map' of sorts
+ggplot(df_merge, aes(x = Latitude, y = Longitude, color = SPCODE)) + 
+  geom_point()
+
+# come up with sampling cohorts - goal is ~20 pieces/day for 10 days 
+  # note that this will probably amount to more than 20 samples/day, if logs are being sampled for more than one decay class
+
+  
