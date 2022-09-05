@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 #### 1. READ IN DATA ----
 ```{r}
-data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/transition_survey_14-21.csv")
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_dc/data/final_dwsurvey/transition_survey_14-21.csv")
 ```
 
 #### 2. DECAY CLASS PROBABILITY MATRIX FROM DATA (non-annualized) ----
@@ -43,7 +43,8 @@ table(data$DC.2017)
 # there will be differences between table(data$DC.2017) and colSums(decay.mat1) - this represents pieces that did not survive 
 
 # percent probability of going from a particular decay state in 2017 to the next state in 2021 
-decay.prob1 <- sweep(decay.mat1,2,table(data$DC.2017),`/`) # need to be dividing by the table(data$DC.2017) counts rather than colSums(decay.mat1)
+decay.prob1 <- sweep(decay.mat1,2,table(data$DC.2017),`/`) 
+# need to be dividing by the table(data$DC.2017) counts rather than colSums(decay.mat1)
 decay.prob1
 
 # to check and make sure that survival is not 100% (which it should not be) - colSums should be < 1.0 
@@ -104,7 +105,6 @@ colSums(decay.prob4)
 
 interesting things going on with decay.prob3 and decay.prob4: the probability of a 3 reverting to a 2 from 2014 onward is higher than a 3 staying as a 3. this could be an artifact of converting between decay class scales.
 
-
 #### 3. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
 since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
 
@@ -133,7 +133,8 @@ A_y <- A ^ (1 / yrs) # Matrix of annualized transitions
 Ayr <- matrix(NA, ncol = 2, nrow = 2) # new annualized matrix
 
 for(i in 1:dim(Ayr)[1]) {
-  Ayr[, i] <- (A_y[, i] / colSums(A_y)[i]) * Asurv[i] # We now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
+  Ayr[, i] <- (A_y[, i] / colSums(A_y)[i]) * Asurv[i] 
+# We now standardize not by 1, but by the annualized survival rate, so that the stages (columns) still 'leak' individuals at the adjusted annual rate 
 }
 ```
 
@@ -238,7 +239,7 @@ decay.prob4yr
 ```
 
 #### 4. CREATE DECAY CLASS TRANSITION SIMULATIONS (no pulse) ----
-now that the transition matrices are annualized and rearing to go, it is time to start with visualizations and time series plots to see how the deadwood pool changes over time 
+now that the transition matrices are annualized, it is time to start with visualizations and time series plots to see how the deadwood pool changes over time 
 
 X code chunks in this section: 
   * simulated matrix example as proof of concept
