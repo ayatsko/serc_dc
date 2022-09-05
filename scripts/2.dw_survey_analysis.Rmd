@@ -8,7 +8,7 @@ output: html_document
 read in data and set workspace 
 ```{r}
 # call this data 'cleaned_survey_14-21'
-data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/cleaned_survey_14-21.csv")
+data <- read.csv("/Users/abbeyyatsko/Desktop/repos/serc_dc/data/final_dwsurvey/cleaned_survey_14-21.csv")
 library(ggplot2)
 library(ggpubr)
 library(dplyr)
@@ -210,5 +210,5 @@ b <-  data %>% filter(!is.na(DC.2014), is.na(DC.2017_3), is.na(DC.2021_3))
 
 ```{r}
 # call this data 'cleaned_survey_14-21'
-write.csv(data, "/Users/abbeyyatsko/Desktop/repos/serc_deadwood/data_FORESTGEO/final_data_FORESTGEO/transition_survey_14-21.csv")
+write.csv(data, "/Users/abbeyyatsko/Desktop/repos/serc_dc/data/final_dwsurvey/transition_survey_14-21.csv")
 ```
