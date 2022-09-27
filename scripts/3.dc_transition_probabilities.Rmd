@@ -112,7 +112,7 @@ need to address the converstion of a 3 tiered DC scale to that of 5 tiers. curre
    
 rather than making this assumption, it would be better to have a statistically informed converstion of 3 tiered DC scale to 5 tiers
 
-#### 3. FIXING THE 3 TIER / 5 TIER PROBLEM ----
+#### 3. FIXING THE 3 TIER / 5 TIER PROBLEM, CONSIDERING DIAMETERS ----
 
 first look at what the problem is: how are pieces moving between 2014 and 2017 BEFORE converting decay class tiers to the same metric
 ```{r}
@@ -197,13 +197,12 @@ fixNAs <- data[is.na(data$DBH.org),]
 
 # there are 57 pieces that need a DBH to be assigned to them - most are A pieces, but some are logs that have multiple segments (through E or F)
 
+# does the piecetag show up in the main df? 
 
+# if so, match the dbh from "data"
+
+# 
 ```
-
-
-
-
-
 
 #### 4. ANNUALIZE DECAY CLASS PROBABILITY MATRIX ----
 since multiple years pass between each deadwood survey, the probabilities in the decay transition matrices need to be 'annualized' 
